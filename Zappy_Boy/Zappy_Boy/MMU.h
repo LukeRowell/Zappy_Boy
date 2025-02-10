@@ -33,7 +33,8 @@ class MMU
 
 		bool getDIV_WRITE();
 
-		unsigned char lastPressed;
+		unsigned char lastDirectionalButtonPressed;
+		unsigned char lastSelectButtonPressed;
 		int readCount;
 
 		unsigned short DIV_COUNTER;

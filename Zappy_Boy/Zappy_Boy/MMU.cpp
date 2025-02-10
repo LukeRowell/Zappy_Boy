@@ -94,7 +94,8 @@ MMU::MMU(CPU &zbCPU, PPU &zbPPU, Cartridge &zbCartridge) : cpu(zbCPU), ppu(zbPPU
 	setupCycles = 0;
 	DIV_WRITE = false;
 
-	lastPressed = 0xFF;
+	lastDirectionalButtonPressed = 0xFF;
+	lastSelectButtonPressed = 0xFF;
 	readCount = 5;
 }
 
@@ -266,11 +267,12 @@ unsigned char MMU::readIO(unsigned short address)
 
 			if (readCount == 0)
 			{
-				lastPressed = 0xFF;
-				readCount = 50;
+				lastDirectionalButtonPressed = 0xFF;
+				lastSelectButtonPressed = 0xFF;
+				readCount = 5;
 			}
 
-			retval = lastPressed;
+			retval = memory[0xFF00] == 0xEF ? lastDirectionalButtonPressed : lastSelectButtonPressed;
 			return retval;
 
 		default:

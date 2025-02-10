@@ -236,9 +236,9 @@ int main()
 
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("boot.bin");			
 
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");							//Title screen, demo plays but draws incorrectly after a bit, doesn't cycle through to next levels on subsequent demo plays
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");							//Title screen, demo plays but draws incorrectly after a bit, doesn't cycle through to next levels on subsequent demo plays
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");									//Title screen, demo fails to play
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");									//Title screen, demo plays
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");									    //Title screen, demo plays
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Donkey_Kong.gb");								//Gray screen
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Pokemon_Blue.gb");								//Gray screen
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Kirby's Dream Land (USA, Europe).gb");			//Unrecognized opcode
