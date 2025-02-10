@@ -263,17 +263,13 @@ unsigned char MMU::readIO(unsigned short address)
 			break;
 
 		case 0xFF00:
-			readCount--;
+			if (memory[0xFF00] == 0xEF)
+				memory[0xFF00] = memory[0xFF00] & lastDirectionalButtonPressed;
+			else if (memory[0xFF00] == 0xDF)
+				memory[0xFF00] = memory[0xFF00] & lastSelectButtonPressed;
 
-			if (readCount == 0)
-			{
-				lastDirectionalButtonPressed = 0xFF;
-				lastSelectButtonPressed = 0xFF;
-				readCount = 5;
-			}
-
-			retval = memory[0xFF00] == 0xEF ? lastDirectionalButtonPressed : lastSelectButtonPressed;
-			return retval;
+			return memory[address];
+			break;
 
 		default:
 			return memory[address];
@@ -291,6 +287,13 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			//write(0xFF00, 0xFF);
 			//writeval = writeval | 0xCF;
 			//writeval = writeval & 0xFF;
+
+			if (value == 0x30)
+			{
+				lastDirectionalButtonPressed = 0xFF;
+				lastSelectButtonPressed = 0xFF;
+			}
+
 			write(0xFF00, writeval);
 			//write(0xFF00, value);
 			break;

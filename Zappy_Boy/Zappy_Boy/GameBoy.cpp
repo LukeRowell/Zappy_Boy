@@ -76,19 +76,19 @@ void GameBoy::pressButton(int buttonIndex)
 		case 0:		//Up
 			//std::cout << "Up from pressButton" << std::endl;
 			//mmu.writeMemory(0xFF00, 0xEB);
-			mmu.lastDirectionalButtonPressed = 0xCB;
+			mmu.lastDirectionalButtonPressed = 0xFB;
 			mmu.readCount = 50;
 			break;
 
 		case 1:		//Down
 			//mmu.writeMemory(0xFF00, 0xE7);
-			mmu.lastDirectionalButtonPressed = 0xE7;
+			mmu.lastDirectionalButtonPressed = 0xF7;
 			mmu.readCount = 50;
 			break;
 
 		case 2:		//Left
 			//mmu.writeMemory(0xFF00, 0xED);
-			mmu.lastDirectionalButtonPressed = 0xCD;
+			mmu.lastDirectionalButtonPressed = 0xFD;
 			mmu.readCount = 50;
 			break;
 
@@ -101,32 +101,32 @@ void GameBoy::pressButton(int buttonIndex)
 			//mmu.write(0xFFFF, 0x10);
 			//cur = cur | 0x0E;
 			//mmu.write(0xFF00, cur);
-			mmu.lastDirectionalButtonPressed = 0xCE;
+			mmu.lastDirectionalButtonPressed = 0xFE;
 			mmu.readCount = 50;
 			break;
 
 		case 4:		//A
 			//mmu.writeMemory(0xFF00, 0xDE);
-			mmu.lastSelectButtonPressed = 0xCE;
+			mmu.lastSelectButtonPressed = 0xFE;
 			mmu.readCount = 50;
 
 			break;
 
 		case 5:		//B
 			//mmu.writeMemory(0xFF00, 0xDD);
-			mmu.lastSelectButtonPressed = 0xCD;
+			mmu.lastSelectButtonPressed = 0xFD;
 			mmu.readCount = 50;
 			break;
 
 		case 6:		//Start
 			//mmu.writeMemory(0xFF00, 0xC7);
-			mmu.lastSelectButtonPressed = 0xD7;
+			mmu.lastSelectButtonPressed = 0xF7;
 			mmu.readCount = 50;
 			break;
 
 		case 7:		//Select
 			//mmu.writeMemory(0xFF00, 1096760xDB);
-			mmu.lastSelectButtonPressed = 0xCB;
+			mmu.lastSelectButtonPressed = 0xFB;
 			mmu.readCount = 50;
 			break;
 
