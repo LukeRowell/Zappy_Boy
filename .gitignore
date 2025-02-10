@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/Zappy_Boy/.vs/Zappy_Boy
+/Zappy_Boy/Debug
+/Zappy_Boy/Release
+*.ico
+*.sln
+*.png
