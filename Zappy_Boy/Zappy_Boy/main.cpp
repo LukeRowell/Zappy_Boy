@@ -63,6 +63,23 @@ void eventHandler()
 {
 	sf::Event event;
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		zappyBoy->pressButton(0);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		zappyBoy->pressButton(1);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		zappyBoy->pressButton(2);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		zappyBoy->pressButton(3);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		zappyBoy->pressButton(4);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		zappyBoy->pressButton(5);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+		zappyBoy->pressButton(6);
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+		zappyBoy->pressButton(7);
+
 	if (window.pollEvent(event))
 	{
 		ImGui::SFML::ProcessEvent(event);
@@ -70,65 +87,6 @@ void eventHandler()
 		if (event.type == sf::Event::Closed)
 		{
 			window.close();
-		}
-
-		if (event.type == sf::Event::KeyPressed)
-		{
-			switch (event.key.code)
-			{
-				case sf::Keyboard::Up:
-					std::cout << "Up press" << std::endl;
-					zappyBoy->pressButton(0);
-					break;
-
-				case sf::Keyboard::Down:
-					std::cout << "Down press" << std::endl;
-					zappyBoy->pressButton(1);
-					break;
-
-				case sf::Keyboard::Left:
-					std::cout << "Left press" << std::endl;
-					zappyBoy->pressButton(2);
-					break;
-
-				case sf::Keyboard::Right:
-					std::cout << "Right press" << std::endl;
-					zappyBoy->pressButton(3);
-					break;
-
-				case sf::Keyboard::S:
-					std::cout << "A press" << std::endl;
-					zappyBoy->pressButton(4);
-					break;
-
-				case sf::Keyboard::A:
-					std::cout << "B press" << std::endl;
-					zappyBoy->pressButton(5);
-					break;
-
-				case sf::Keyboard::Return:
-					std::cout << "Start press" << std::endl;
-					zappyBoy->pressButton(6);
-					break;
-
-				case sf::Keyboard::LShift:
-					std::cout << "Select press" << std::endl;
-					zappyBoy->pressButton(7);
-					break;
-
-				case sf::Keyboard::Num7:
-					std::cout << "Debugger enabled" << std::endl;
-					zappyBoy->enableDebugger();
-					break;
-
-				default:
-					break;
-			}
-		}
-
-		else
-		{
-			//zappyBoy->pressButton(8);	//No button pressed on this frame
 		}
 	}
 }
@@ -168,14 +126,6 @@ static void draw(const Buffer &buffer)
 static bool checkWindow()
 {
 	return window.isOpen();
-}
-
-void threadTest(std::string message)
-{
-	while (true)
-	{
-		std::cout << "hi" << std::endl;
-	}
 }
 
 //int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszArgument, int nCmdShow)
@@ -253,7 +203,7 @@ int main()
 	window.setIcon(60, 60, icon.getPixelsPtr());
 	window.setFramerateLimit(60);
 	window.setVerticalSyncEnabled(true);
-	window.setKeyRepeatEnabled(false);
+	//window.setKeyRepeatEnabled(false);
 
 	screen.create(160, 144, sf::Color::White);
 	screenTexture.loadFromImage(screen);
