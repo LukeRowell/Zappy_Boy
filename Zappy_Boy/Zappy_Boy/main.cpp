@@ -20,6 +20,8 @@ GameBoy* zappyBoy;
 bool load_rom_flag = false;
 bool quit_flag = false;
 
+bool windowFocused = true;
+
 std::vector<unsigned char> loadCartridgeData(std::string fileName)
 {
 	std::ifstream ROM_File;
@@ -63,22 +65,57 @@ void eventHandler()
 {
 	sf::Event event;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		zappyBoy->pressButton(0);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		zappyBoy->pressButton(1);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		zappyBoy->pressButton(2);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		zappyBoy->pressButton(3);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		zappyBoy->pressButton(4);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-		zappyBoy->pressButton(5);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
-		zappyBoy->pressButton(6);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-		zappyBoy->pressButton(7);
+	/*
+	if (sf::Joystick::isButtonPressed(0, 0))
+		std::cout << "0 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 1))
+		std::cout << "1 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 2))
+		std::cout << "2 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 3))
+		std::cout << "3 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 4))
+		std::cout << "4 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 5))
+		std::cout << "5 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 6))
+		std::cout << "6 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 7))
+		std::cout << "7 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 8))
+		std::cout << "8 pressed" << std::endl;
+	if (sf::Joystick::isButtonPressed(0, 9))
+		std::cout << "9 pressed" << std::endl;
+
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) > 50)
+		std::cout << "up pressed" << std::endl;
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) < -50)
+		std::cout << "down pressed" << std::endl;
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) < -50)
+		std::cout << "left pressed" << std::endl;
+	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) > 50)
+		std::cout << "right pressed" << std::endl;
+	*/
+
+	if (windowFocused)
+	{
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) > 50)
+			zappyBoy->pressButton(0);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) < -50)
+			zappyBoy->pressButton(1);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) < -50)
+			zappyBoy->pressButton(2);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) > 50)
+			zappyBoy->pressButton(3);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Joystick::isButtonPressed(0, 1))
+			zappyBoy->pressButton(4);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Joystick::isButtonPressed(0, 0))
+			zappyBoy->pressButton(5);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter) || sf::Joystick::isButtonPressed(0, 7))
+			zappyBoy->pressButton(6);
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Joystick::isButtonPressed(0, 6))
+			zappyBoy->pressButton(7);
+	}
 
 	if (window.pollEvent(event))
 	{
@@ -88,6 +125,12 @@ void eventHandler()
 		{
 			window.close();
 		}
+
+		if (event.type == sf::Event::LostFocus)
+			windowFocused = false;
+
+		if (event.type == sf::Event::GainedFocus)
+			windowFocused = true;
 	}
 }
 
@@ -194,6 +237,7 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Kirby's Dream Land (USA, Europe).gb");			//Unrecognized opcode
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev 2).gb");	//Gray screen
 
+	int joystickIndex;
 	sf::Image icon;
 	icon.loadFromFile("zb_icon_3.png");
 	ImGui::SFML::Init(window);
@@ -232,6 +276,11 @@ int main()
 
 	//std::thread t1(eventHandler);
 
+	for (int i = 0; i < 8; i++)
+	{
+		if (sf::Joystick::isConnected(i))
+			joystickIndex = i;
+	}
 
 	zappyBoy->powerOn(&checkWindow, &draw);
 
