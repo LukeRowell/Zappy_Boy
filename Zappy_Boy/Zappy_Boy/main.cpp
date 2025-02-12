@@ -189,7 +189,7 @@ int main()
 
 	char windowTitle[255] = "Zappy Boy";
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("01-special.gb");								//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("02-interrupts.gb");								//PASS
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("02-interrupts.gb");								//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("03-op_sp_hl.gb");								//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("04-op_r_imm.gb");								//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("05-op_rp.gb");									//PASS	TODO: PPU default color???
@@ -230,8 +230,8 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("boot.bin");			
 
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");							//Title screen, demo plays but draws incorrectly after a bit, doesn't cycle through to next levels on subsequent demo plays
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");									//Title screen, demo fails to play
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");									    //Title screen, demo plays
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");									//Title screen, flashes a few times and then hangs
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");									//99% functional, need to investigate breaking when "2PLAYER" is selected from menu screen
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Donkey_Kong.gb");								//Gray screen
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Pokemon_Blue.gb");								//Gray screen
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Kirby's Dream Land (USA, Europe).gb");			//Unrecognized opcode

@@ -371,6 +371,8 @@ void CPU::SRL(unsigned char &reg)
 
 void CPU::interruptHandler()
 {
+	cyclesElapsed += 3;
+
 	if (IME_READY)
 	{
 		IME = true;
@@ -434,7 +436,7 @@ void CPU::interruptHandler()
 	if (IME || halted)
 	{
 		//if (IE == 0x01 && IF == 0xE1)
-		if(bitwise::check_bit(*(mmu.IE), 0) && bitwise::check_bit(*(mmu.IF), 0))
+		if (bitwise::check_bit(*(mmu.IE), 0) && bitwise::check_bit(*(mmu.IF), 0))
 		{
 			/*if (SP < 0xFF80 || SP > 0xFFFE)
 			{
@@ -463,9 +465,11 @@ void CPU::interruptHandler()
 
 			halted ? cyclesElapsed = 6 : cyclesElapsed = 5;
 			halted = false;
+
+			mmu.writeMemory(0xFF0F, 0xE0);
 		}
 
-		else if(bitwise::check_bit(*(mmu.IE), 1) && bitwise::check_bit(*(mmu.IF), 1))
+		else if (bitwise::check_bit(*(mmu.IE), 1) && bitwise::check_bit(*(mmu.IF), 1))
 		//else if (IE == 0x02 && IF == 0xE2)
 		{
 			/*if (SP < 0xFF80 || SP > 0xFFFE)
@@ -494,6 +498,8 @@ void CPU::interruptHandler()
 
 			halted ? cyclesElapsed = 6 : cyclesElapsed = 5;
 			halted = false;
+
+			mmu.writeMemory(0xFF0F, 0xE0);
 		}
 
 		else if (bitwise::check_bit(*(mmu.IE), 2) && bitwise::check_bit(*(mmu.IF), 2))
@@ -525,6 +531,8 @@ void CPU::interruptHandler()
 
 			halted ? cyclesElapsed = 6 : cyclesElapsed = 5;
 			halted = false;
+
+			mmu.writeMemory(0xFF0F, 0xE0);
 		}
 
 		else if (bitwise::check_bit(*(mmu.IE), 3) && bitwise::check_bit(*(mmu.IF), 3))
@@ -556,10 +564,11 @@ void CPU::interruptHandler()
 
 			halted ? cyclesElapsed = 6 : cyclesElapsed = 5;
 			halted = false;
+
+			mmu.writeMemory(0xFF0F, 0xE0);
 		}
 
 		else if (bitwise::check_bit(*(mmu.IE), 4) && bitwise::check_bit(*(mmu.IF), 4))
-		//else if (IE == 0x10 && IF == 0xF0)
 		{
 			/*if (SP < 0xFF80 || SP > 0xFFFE)
 			{
@@ -587,6 +596,8 @@ void CPU::interruptHandler()
 
 			halted ? cyclesElapsed = 6 : cyclesElapsed = 5;
 			halted = false;
+
+			mmu.writeMemory(0xFF0F, 0xE0);
 		}
 	}
 
@@ -686,12 +697,8 @@ void CPU::updateTimer(int cyclesElapsed)
 
 	unsigned char prevTIMA = *(mmu.TIMA);
 
-	//timer = currentTIMA;
-	if (timerClocksElapsed >= 256)
-	{
-		//divider += cyclesElapsed * 4;
-		//mmu.updateDIV(divider);
-	}
+	bool incrementTIMA = false;
+	int incrementFrequency = 256;
 
 	if (bitwise::check_bit(*(mmu.TAC), 2))
 	{
@@ -702,58 +709,43 @@ void CPU::updateTimer(int cyclesElapsed)
 
 		else
 		{
-			timerClocksElapsed += cyclesElapsed * 4;
+			timerClocksElapsed += cyclesElapsed;
 		}
 
-		if (!bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 1024)
+		if (!bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed > 256)
 		{
-			//mmu.writeMemory()
-			while (timerClocksElapsed >= 1024)
-			{
-				timerClocksElapsed -= 1024;
-				mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
-			}
+			timerClocksElapsed -= 256;
+			incrementTIMA = true;
 		}
 
-		else if (!bitwise::check_bit(*(mmu.TAC), 1) && bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 16)
+		else if (!bitwise::check_bit(*(mmu.TAC), 1) && bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed > 4)
 		{
-			while (timerClocksElapsed >= 16)
-			{
-				timerClocksElapsed -= 16;
-				mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
-			}
+			timerClocksElapsed -= 4;
+			incrementTIMA = true;
 		}
 
-		else if (bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 64)
+		else if (bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed > 16)
 		{
-			while (timerClocksElapsed >= 64)
-			{
-				timerClocksElapsed -= 64;
-				mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
-			}
+			timerClocksElapsed -= 16;
+			incrementTIMA = true;
 		}
 
-		else if(bitwise::check_bit(*(mmu.TAC), 1) && bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 256)
+		else if(bitwise::check_bit(*(mmu.TAC), 1) && bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed > 64)
 		{
-			while (timerClocksElapsed >= 256)
-			{
-				timerClocksElapsed -= 256;
-				mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
-			}
+			timerClocksElapsed -= 64;
+			incrementTIMA = true;
 		}
 
 		if (prevTIMA > *(mmu.TIMA))		//TIMA has overflown and TMA needs to be written into TIMA
 		{
 			mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));		//load TMA
 			mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
-		}
-
-		else
-		{
-
+			mmu.writeMemory(0xFF0F, mmu.readMemory(0xFFFF) | 0x04);
 		}
 	}
 
+	if (incrementTIMA)
+		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
 
 	/*
 	if ((currentTAC & 0x04) != 0)
@@ -886,7 +878,7 @@ int CPU::tick()
 	//For checking button polling in Tetris
 	//unsigned short testPC = 0x29A6;
 
-	unsigned short testPC = 0x1A5F;
+	unsigned short testPC = 0xC2BC;
 
 	if (PC == testPC)
 	{
@@ -3816,10 +3808,6 @@ int CPU::tick()
 			PC = (mmu.readMemory(SP + 1) << 8) | mmu.readMemory(SP);
 			SP += 2;
 			IME = true;
-			if (PC == 0x01f3)
-			{
-				std::cout << "error" << std::endl;
-			}
 			break;
 
 		default:
@@ -3905,15 +3893,11 @@ int CPU::tick()
 		haltBug = false;
 	}	
 	
-	if (PC == 0x01f3)
-	{
-		std::cout << "error" << std::endl;
-	}
-
 	clocksElapsed = cyclesElapsed;
-	DIV += clocksElapsed;
+	//DIV += clocksElapsed;
 	divClocksElapsed += clocksElapsed;
-	refreshClocksElapsed += clocksElapsed;
+	//timerClocksElapsed += clocksElapsed;
+	refreshClocksElapsed += clocksElapsed * 4;
 
 	if (divClocksElapsed >= 256)
 	{
@@ -3926,5 +3910,5 @@ int CPU::tick()
 	//mmu.write(0xFF00, 0xEE);
 
 
-	return cyclesElapsed;
+	return clocksElapsed;
 }
