@@ -42,6 +42,8 @@ class GameBoy
 		PPU ppu;
 		MMU mmu;
 		Cartridge cartridge;
+
+		static std::vector<std::string> debugStrings;
 };
 
 #endif

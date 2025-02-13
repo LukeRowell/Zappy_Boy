@@ -3,6 +3,8 @@
 #define CPU_H
 
 #include <iostream>
+#include <vector>
+#include <sstream>
 #include "MMU.h"
 #include "Debugger.h"
 
@@ -131,7 +133,7 @@ class CPU
 		int refreshClocksElapsed;
 		int timerFreq;
 		unsigned char timer;
-		unsigned char DIV;
+		unsigned short DIV;
 		bool halted;						//Halted status
 		bool IME;
 		bool IME_READY;
@@ -146,6 +148,9 @@ class CPU
 		Debugger debugger;
 
 		bool debuggerEnabled = false;
+
+		std::vector<std::string> debugStrings;
+		std::stringstream ss;
 };
 
 #endif

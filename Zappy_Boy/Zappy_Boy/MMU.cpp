@@ -41,7 +41,7 @@ MMU::MMU(CPU &zbCPU, PPU &zbPPU, Cartridge &zbCartridge) : cpu(zbCPU), ppu(zbPPU
 	memory[0xFF41] = 0x85;		//BGB value
 	memory[0xFF42] = 0x00;
 	memory[0xFF43] = 0x00;
-	//memory[0xFF44] = 0x87;		//BGB value maybe?
+	memory[0xFF44] = 0x90;		//BGB value maybe?
 	memory[0xFF44] = 0x00;
 	memory[0xFF45] = 0x00;
 	memory[0xFF47] = 0xFC;
@@ -251,6 +251,7 @@ unsigned char MMU::readIO(unsigned short address)
 	switch (address)
 	{
 		case 0xFF04:
+			retval = cpu.DIV >> 8;
 			return cpu.DIV;
 			break;
 
@@ -326,7 +327,8 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF07:		//TAC
-			write(0xFF07, value);
+			write(0xFF07, value | 0xF8);
+			timerEnabledThisInstruction = true;
 			break;
 
 		case 0xFF0F:		//IF			TODO: upper 3 bits should remain set

@@ -86,6 +86,7 @@ class MMU
 		unsigned char DMA_Val;
 		unsigned char DMA_Index;
 		bool DIV_WRITE;
+		bool timerEnabledThisInstruction = false;
 
 		CPU &cpu;
 		PPU &ppu;
