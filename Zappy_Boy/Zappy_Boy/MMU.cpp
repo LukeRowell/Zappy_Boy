@@ -313,12 +313,16 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF04:		//DIV, writing to this registers resets it to 0x00
+			cpu.DIV = 0x0000;
 			write(0xFF04, 0x00);
 			//cpu.setDivider(0);
 			DIV_WRITE = true;
+			cpu.timerClocksElapsed = 0;		//Writing to DIV resets TIMA
 			break;
 
 		case 0xFF05:		//TIMA
+			cpu.timerClocksElapsed = 0;
+			timerEnabledThisInstruction = true;
 			write(0xFF05, value);
 			break;
 

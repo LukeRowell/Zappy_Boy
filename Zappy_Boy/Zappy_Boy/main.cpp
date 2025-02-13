@@ -222,7 +222,7 @@ int main()
 
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/hblank_ly_scx_timing-GS.gb");	//FAIL
 
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim00.gb");					//FAIL
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim00.gb");					//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tima_reload.gb");				//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/div_write.gb");				//FAIL
 
@@ -320,7 +320,7 @@ int main()
 	//delete zappyBoy;
 	ImGui::SFML::Shutdown();
 
-	
+	/*
 	std::ofstream outFile;
 
 	outFile.open("cycles.txt");
@@ -331,7 +331,7 @@ int main()
 	}
 
 	outFile.close();
-	
+	*/
 
 	return 0;
 }

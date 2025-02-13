@@ -371,7 +371,7 @@ void CPU::SRL(unsigned char &reg)
 
 void CPU::interruptHandler()
 {
-	cyclesElapsed += 5;
+	//cyclesElapsed += 5;
 
 	if (IME_READY)
 	{
@@ -701,18 +701,10 @@ void CPU::updateTimer(int cyclesElapsed)
 
 	if (bitwise::check_bit(*(mmu.TAC), 2))
 	{
-		if (mmu.getDIV_WRITE())
-		{
-			//timerClocksElapsed -= cyclesElapsed * 4;
-		}
-
+		if (mmu.timerEnabledThisInstruction)
+			mmu.timerEnabledThisInstruction = false;
 		else
-		{
-			if (mmu.timerEnabledThisInstruction)
-				mmu.timerEnabledThisInstruction = false;
-			else
-				timerClocksElapsed += cyclesElapsed;
-		}
+			timerClocksElapsed += cyclesElapsed;
 
 		if (!bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 256)
 		{
@@ -888,7 +880,7 @@ int CPU::tick()
 	//unsigned short testPC = 0x29A6;
 
 	unsigned short testPC = 0x0161;
-	unsigned short testPC2 = 0x0266;
+	unsigned short testPC2 = 0x0267;
 
 	if (PC == testPC || PC == testPC2)
 	{
@@ -909,8 +901,6 @@ int CPU::tick()
 
 	cyclesElapsed = 0;
 	prevPC = PC;
-
-
 
 	switch (opcode)
 	{
@@ -3913,18 +3903,6 @@ int CPU::tick()
 
 	DIV += clocksElapsed * 4;
 	mmu.memory[0xFF04] = DIV >> 8;
-
-	if (divClocksElapsed >= 256)
-	{
-		//mmu.writeMemory(0xFF04, mmu.readMemory(0xFF04) + 1);
-		//divClocksElapsed -= 256;
-		//divClocksElapsed = 0;
-		//DIV++;
-	}
-
-	//mmu.write(0xFF00, 0xEE);
-
-
 
 	return clocksElapsed;
 }
