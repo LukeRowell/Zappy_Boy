@@ -87,6 +87,8 @@ class MMU
 		unsigned char DMA_Index;
 		bool DIV_WRITE;
 		bool timerEnabledThisInstruction = false;
+		unsigned char prevTIMA;
+		bool TIMAOverflow = false;
 
 		CPU &cpu;
 		PPU &ppu;

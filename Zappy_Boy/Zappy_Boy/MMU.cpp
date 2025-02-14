@@ -321,7 +321,6 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF05:		//TIMA
-			cpu.timerClocksElapsed = 0;
 			timerEnabledThisInstruction = true;
 			write(0xFF05, value);
 			break;

@@ -699,12 +699,15 @@ void CPU::updateTimer(int cyclesElapsed)
 
 	bool incrementTIMA = false;
 
+	if (mmu.TIMAOverflow)
+	{
+		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));
+		mmu.TIMAOverflow = false;
+	}
+
 	if (bitwise::check_bit(*(mmu.TAC), 2))
 	{
-		if (mmu.timerEnabledThisInstruction)
-			mmu.timerEnabledThisInstruction = false;
-		else
-			timerClocksElapsed += cyclesElapsed;
+		timerClocksElapsed += cyclesElapsed;
 
 		if (!bitwise::check_bit(*(mmu.TAC), 1) && !bitwise::check_bit(*(mmu.TAC), 0) && timerClocksElapsed >= 256)
 		{
@@ -729,17 +732,16 @@ void CPU::updateTimer(int cyclesElapsed)
 			timerClocksElapsed -= 64;
 			incrementTIMA = true;
 		}
-
-		if (prevTIMA > *(mmu.TIMA))		//TIMA has overflown and TMA needs to be written into TIMA
-		{
-			mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));		//load TMA
-			mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
-			mmu.writeMemory(0xFF0F, mmu.readMemory(0xFFFF) | 0x04);
-		}
 	}
 
 	if (incrementTIMA)
+	{
+		prevTIMA = mmu.readMemory(0xFF05);
 		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF05) + 1);
+
+		if (prevTIMA > mmu.readMemory(0xFF05))
+			mmu.TIMAOverflow = true;
+	}
 
 	/*
 	if ((currentTAC & 0x04) != 0)
@@ -879,7 +881,7 @@ int CPU::tick()
 	//For checking button polling in Tetris
 	//unsigned short testPC = 0x29A6;
 
-	unsigned short testPC = 0x0161;
+	unsigned short testPC = 0x01AE;
 	unsigned short testPC2 = 0x0267;
 
 	if (PC == testPC || PC == testPC2)
