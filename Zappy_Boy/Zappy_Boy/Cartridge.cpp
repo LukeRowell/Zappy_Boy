@@ -41,6 +41,11 @@ Cartridge::Cartridge(std::vector<unsigned char> cartridgeData) : ROM(cartridgeDa
 			ROM_BANK = 0x1;
 			break;
 
+		case 0x03:
+			RAM_ENABLED = true;
+			ROM_BANKING = true;
+			ROM_BANK = 0x1;
+
 		default:
 			break;
 	}
@@ -100,10 +105,14 @@ unsigned char Cartridge::read(const unsigned short address)
 			break;
 
 		case 0x01:		//MBC1
-			return readMBC1(address);
+			return readNoMBC(address);
 			break;
 
 		case 0x02:		//MBC1 + RAM
+			return readMBC1(address);
+			break;
+
+		case 0x03:		//MBC1 + RAM + BATTERY
 			return readMBC1(address);
 			break;
 
@@ -122,10 +131,14 @@ void Cartridge::write(const unsigned short address, unsigned char value)
 			break;
 
 		case 0x01:		//MBC1
-			writeMBC1(address, value);
+			writeNoMBC(address, value);
 			break;
 
 		case 0x02:		//MBC1 + RAM
+			writeMBC1(address, value);
+			break;
+
+		case 0x03:		//MBC1 + RAM + BATTERY
 			writeMBC1(address, value);
 			break;
 
@@ -160,9 +173,12 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 
 	else if (address >= 0xA000 && address <= 0xBFFF)
 	{
-		unsigned int offset = 0x4000 * ROM_BANK;
-		unsigned short bankAddress = address - 0xA000;
-		unsigned int address = bankAddress + offset;
+		if (!RAM_ENABLED)
+			return 0xFF;
+
+		//unsigned int offset = 0x4000 * ROM_BANK;
+		//unsigned short bankAddress = address - 0xA000;
+		//unsigned int address = bankAddress + offset;
 
 		return RAM[address];
 	}
@@ -172,7 +188,10 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 {
 	if (address >= 0x0000 && address <= 0x1FFF)		//Writes to this area enable the RAM
 	{
-		RAM_ENABLED = true;
+		if ((value & 0x0F) == 0x0A)
+			RAM_ENABLED = true;
+		else
+			RAM_ENABLED = false;
 	}
 
 	if (address >= 0x2000 && address <= 0x3FFF)
@@ -203,6 +222,8 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 
 	if (address >= 0xA000 && address <= 0xBFFF)
 	{
+		RAM[address] = value;
+		/*
 		if (RAM_ENABLED && RAM_SIZE != 0)
 		{
 			auto offset = 0x2000 * RAM_BANK;
@@ -210,5 +231,6 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 
 			RAM[bankAddress] = value;
 		}
+		*/
 	}
 }

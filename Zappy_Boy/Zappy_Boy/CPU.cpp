@@ -702,6 +702,7 @@ void CPU::updateTimer(int cyclesElapsed)
 	if (mmu.TIMAOverflow)
 	{
 		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));
+		mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
 		mmu.TIMAOverflow = false;
 	}
 
@@ -881,7 +882,7 @@ int CPU::tick()
 	//For checking button polling in Tetris
 	//unsigned short testPC = 0x29A6;
 
-	unsigned short testPC = 0x01AE;
+	unsigned short testPC = 0x023A;
 	unsigned short testPC2 = 0x0267;
 
 	if (PC == testPC || PC == testPC2)
@@ -3888,6 +3889,7 @@ int CPU::tick()
 		{
 			//cyclesElapsed += opcodeCycles[opcode];
 			cyclesElapsed += opcodeCycles[opcode];
+
 		}
 	}
 

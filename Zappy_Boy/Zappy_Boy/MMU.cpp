@@ -259,10 +259,6 @@ unsigned char MMU::readIO(unsigned short address)
 			return memory[address];
 			break;
 
-		case 0xFF44:
-			return ppu.line;
-			break;
-
 		case 0xFF00:
 			if (memory[0xFF00] == 0xEF)
 				memory[0xFF00] = memory[0xFF00] & lastDirectionalButtonPressed;
@@ -270,6 +266,14 @@ unsigned char MMU::readIO(unsigned short address)
 				memory[0xFF00] = memory[0xFF00] & lastSelectButtonPressed;
 
 			return memory[address];
+			break;
+
+		case 0xFF0F:
+			return memory[address];
+			break;
+
+		case 0xFF44:
+			return ppu.line;
 			break;
 
 		default:
@@ -285,10 +289,6 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 	switch (registerValue)
 	{
 		case 0xFF00:		//Joypad input
-			//write(0xFF00, 0xFF);
-			//writeval = writeval | 0xCF;
-			//writeval = writeval & 0xFF;
-
 			if (value == 0x30)
 			{
 				lastDirectionalButtonPressed = 0xFF;

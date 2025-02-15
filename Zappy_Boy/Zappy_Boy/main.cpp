@@ -191,62 +191,108 @@ int main()
 	char windowTitle[255] = "Zappy Boy";
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("boot.bin");		
 	
-	//--------------CPU--------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("01-special.gb");								//PASS
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("02-interrupts.gb");								//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("03-op_sp_hl.gb");								//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("04-op_r_imm.gb");								//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("05-op_rp.gb");									//PASS	TODO: PPU default color???
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("06-ld_r_r.gb");									//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("07-jr_jp_call_ret_rst.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("08-misc_instrs.gb");							//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("09-op_r_r.gb");									//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("10-bit_ops.gb");								//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("11-op_a_(hl).gb");								//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("cpu_instrs.gb");								//PASS
+	//------------------------------------------BLARGG--------------------------------------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("01-special.gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("02-interrupts.gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("03-op_sp_hl.gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("04-op_r_imm.gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("05-op_rp.gb");										//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("06-ld_r_r.gb");										//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("07-jr_jp_call_ret_rst.gb");							//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("08-misc_instrs.gb");								//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("09-op_r_r.gb");										//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("10-bit_ops.gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("11-op_a_(hl).gb");									//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("cpu_instrs.gb");									//PASS
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("halt_bug.gb");									//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("interrupt_time/interrupt_time.gb");				//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("instr_timing/instr_timing.gb");					//FAIL #2
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("halt_bug.gb");										//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("interrupt_time/interrupt_time.gb");					//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("instr_timing/instr_timing.gb");						//FAIL #2
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/01-read_timing.gb");		//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/02-write_timing.gb");		//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/03-modify_timing.gb");	//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/mem_timing.gb");						//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/01-read_timing.gb");			//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/02-write_timing.gb");			//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/individual/03-modify_timing.gb");		//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("mem_timing/mem_timing.gb");							//FAIL
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/mem_oam.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/reg_f.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/unused_hwio-GS.gb");			//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/hblank_ly_scx_timing-GS.gb");		//FAIL
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/interrupts/ie_push.gb");				//FAIL	CURRENT
+	//------------------------------------------MOONEYE------------------------------------------
+	//
+	//----------------------------ACCEPTANCE----------------------------
+	// 
+	//--------------BITS---------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/mem_oam.gb");						//PASS 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/reg_f.gb");							//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/unused_hwio-GS.gb");				//FAIL
+	//
+	//--------------INSTR--------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/instr/daa.gb");							//PASS 
+	//
+	//-----------INTERRUPTS------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/interrupts/ie_push.gb");					//FAIL (BGB also fails this test, but with a different error) 
+	//
+	//------------OAM_DMA-------------- 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/basic.gb");						//PASS (weird graphical artifacts due to no read/write restrictions based on PPU mode)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/reg_read.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/sources-dmgABCmgbS.gb");			//FAIL 
+	//
+	//--------------PPU---------------- 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/hblank_ly_scx_timing-GS.gb");		//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_1_2_timing-GS.gb");				//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_0_timing.gb");				//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode0_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode0_timing_sprites.gb");	//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode3_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_oam_ok_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/lcdon_timing-dmgABCmgbS.gb");		//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/lcdon_write_timing-GS.gb");			//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/stat_irq_blocking.gb");				//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/stat_lyc_onoff.gb");					//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/vblank_stat_intr-GS.gb");			//FAIL (completely frozen, no screen display)
+	//
+	//-------------SERIAL-------------- 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/serial/boot_sclk_align-dmgABCmgb.gb");	//FAIL
+	// 
+	//-------------TIMER---------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim00.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim01.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim10.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim11.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tima_reload.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/div_write.gb");					//PASS
+	//
+	//----------------------------EMULATOR-ONLY--------------------------
+	//
+	//--------------MBC1---------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/bits_ram_en.gb");				//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/multicart_rom_8mb.gb");			//FAIL			
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_64Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_1Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_2Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_4Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_8Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_16Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_512Kb.gb");
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/basic.gb");					//PASS (weird graphical artifacts due to no read/write restrictions based on PPU mode)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/reg_read.gb");				//PASS
 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/hblank_ly_scx_timing-GS.gb");	//FAIL
-
-	//--------------TIMER--------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim00.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim01.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim10.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim11.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tima_reload.gb");				//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/div_write.gb");				//PASS
+	//------------------------------------------MISC------------------------------------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("dmg-acid2.gb");										//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("misc/ppu/vblank_stat_intr-C.gb");					//FAIL
 
 
-
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("misc/ppu/vblank_stat_intr-C.gb");				//FAIL
-
-	//ROM ONLY CARTS	
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");									//Now playable due to TIMA fixes, but speeds are incorrect. (Perhaps PPU related)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");									//99% functional, need to investigate breaking when "2PLAYER" is selected from menu screen
-	
-	//MBCX carts
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");							//Title screen, demo plays but draws incorrectly after a bit, doesn't cycle through to next levels on subsequent demo plays
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Donkey_Kong.gb");								//Gray screen
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Pokemon_Blue.gb");								//Gray screen
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Kirby's Dream Land (USA, Europe).gb");			//Unrecognized opcode
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev 2).gb");	//Gray screen
+	//------------------------------------------ROMS------------------------------------------
+	//
+	//--------------ROM ONLY CARTS--------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");										//Emulating TIMA interrupt causes this game to repeatedly flash at the title screen. May have something to do with the serial port/interrupt.
+	//
+	//--------------MBCX CARTS--------------
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");												//MBC1
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Kirby's Dream Land (USA, Europe).gb");								//MBC1
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Donkey_Kong.gb");													//MBC1+RAM+BATTERY
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev 2).gb");	//MBC1+RAM+BATTERY
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Pokemon_Blue.gb");													//MBC3+RAM+BATTERY
 
 	int joystickIndex;
 	sf::Image icon;
