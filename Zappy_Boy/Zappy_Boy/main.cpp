@@ -254,20 +254,23 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/serial/boot_sclk_align-dmgABCmgb.gb");	//FAIL
 	// 
 	//-------------TIMER---------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim00.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim01.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim10.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tim11.gb");						//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/tima_reload.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/timer/div_write.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/tim00.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/tim01.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/tim10.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/tim11.gb");						//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/tima_reload.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/timer/div_write.gb");					//PASS
 	//
 	//----------------------------EMULATOR-ONLY--------------------------
 	//
 	//--------------MBC1---------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/bits_ram_en.gb");				//PASS
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_bank1.gb");					//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_bank2.gb");				//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_mode.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_ramg.gb");					//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/multicart_rom_8mb.gb");			//FAIL			
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_64Kb.gb");					//PASS
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");					//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_1Mb.gb");
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_2Mb.gb");
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_4Mb.gb");

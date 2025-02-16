@@ -164,14 +164,47 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 {
 	if (address >= 0x0000 && address <= 0x3FFF)
 	{
-		return ROM[address];
+		if (!MODE_REG)
+			return ROM[address];
+		else
+			return ROM[0x4000 * 0 + address];
 	}
 
 	else if (address >= 0x4000 && address <= 0x7FFF)
 	{
-		unsigned short bankAddress = address - 0x4000;
+		unsigned char HIGH_BANK_NUMBER;
 
-		return ROM[(0x4000 * ROM_BANK) + bankAddress];
+		switch (ROM_SIZE)
+		{
+			case 0x00:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x01;
+				break;
+			case 0x01:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x03;
+				break;
+			case 0x02:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x07;
+				break;
+			case 0x03:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x0F;
+				break;
+			case 0x04:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x1F;
+				break;
+			case 0x05:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x1F;
+				break;
+			case 0x06:
+				HIGH_BANK_NUMBER = BANK1_REG & 0x1F;
+				break;
+			default:
+				HIGH_BANK_NUMBER = 0x00;
+				break;
+		};
+
+		unsigned short bankAddr = 0x4000 * HIGH_BANK_NUMBER + (address - 0x4000);
+
+		return ROM[0x4000 * HIGH_BANK_NUMBER + (address - 0x4000)];
 	}
 
 	else if (address >= 0xA000 && address <= 0xBFFF)
@@ -179,11 +212,27 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 		if (!RAMG_REG)
 			return 0xFF;
 
-		//unsigned int offset = 0x4000 * ROM_BANK;
-		//unsigned short bankAddress = address - 0xA000;
-		//unsigned int address = bankAddress + offset;
+		unsigned short RAMAddress;
 
-		return RAM[(address - 0xA000) % RAM.size()];
+		switch (RAM_SIZE)
+		{
+			case 0x01:
+				RAMAddress = (address - 0xA000) % RAM.size();
+				break;
+			case 0x02:
+				RAMAddress = (address - 0xA000) % RAM.size();
+				break;
+			case 0x03:
+				if (!MODE_REG)
+					RAMAddress = address - 0xA000;
+				else
+					RAMAddress = 0x2000 * BANK2_REG + (address - 0xA000);
+				break;
+			default:
+				RAMAddress = (address - 0xA000) % RAM.size();
+		};
+
+		return RAM[RAMAddress];
 	}
 }
 
@@ -201,17 +250,42 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 
 	if (address >= 0x2000 && address <= 0x3FFF)		//ROM bank select register
 	{
-		BANK1_REG = value;
-
-		if (BANK1_REG == 0x00)
-			BANK1_REG |= 0x01;
+		if (value == 0x00)
+			BANK1_REG = 0x01;
+		else
+		{
+			switch (ROM_SIZE)
+			{
+				case 0x00:
+					BANK1_REG = value & 0x01;
+					break;
+				case 0x01:
+					BANK1_REG = value & 0x03;
+					break;
+				case 0x02:
+					BANK1_REG = value & 0x07;
+					break;
+				case 0x03:
+					BANK1_REG = value & 0x0F;
+					break;
+				case 0x04:
+					BANK1_REG = value & 0x1F;
+					break;
+				case 0x05:
+					BANK1_REG = value & 0x1F;
+					break;
+				case 0x06:
+					BANK1_REG = value & 0x1F;
+					break;
+			};
+		}
 
 		return;
 	}
 
 	if (address >= 0x4000 && address <= 0x5FFF)
 	{
-
+		BANK2_REG = value & 0x03;
 	}
 
 	if (address >= 0x6000 && address <= 0x7FFF)		//Banking mode select register
