@@ -108,7 +108,7 @@ unsigned char Cartridge::read(const unsigned short address)
 			break;
 
 		case 0x01:		//MBC1
-			return readNoMBC(address);
+			return readMBC1(address);
 			break;
 
 		case 0x02:		//MBC1 + RAM
@@ -134,7 +134,7 @@ void Cartridge::write(const unsigned short address, unsigned char value)
 			break;
 
 		case 0x01:		//MBC1
-			writeNoMBC(address, value);
+			writeMBC1(address, value);
 			break;
 
 		case 0x02:		//MBC1 + RAM

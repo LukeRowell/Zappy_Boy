@@ -264,19 +264,19 @@ int main()
 	//----------------------------EMULATOR-ONLY--------------------------
 	//
 	//--------------MBC1---------------
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_bank1.gb");					//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_bank1.gb");				//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_bank2.gb");				//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_mode.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_ramg.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/multicart_rom_8mb.gb");			//FAIL			
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_64Kb.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");					//PASS
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_1Mb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_2Mb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_4Mb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_8Mb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_16Mb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_512Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/bits_ramg.gb");					//PASS	
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/ram_64Kb.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/ram_256Kb.gb");					//PASS
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_1Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_2Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_4Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_8Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_16Mb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/rom_512Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only2/mbc1/multicart_rom_8mb.gb");			//FAIL		
 
 
 	//------------------------------------------MISC------------------------------------------
