@@ -882,8 +882,8 @@ int CPU::tick()
 	//For checking button polling in Tetris
 	//unsigned short testPC = 0x29A6;
 
-	unsigned short testPC = 0x023A;
-	unsigned short testPC2 = 0x0267;
+	unsigned short testPC = 0x0245;
+	unsigned short testPC2 = 0x0000;
 
 	if (PC == testPC || PC == testPC2)
 	{

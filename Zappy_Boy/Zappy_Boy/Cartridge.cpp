@@ -22,27 +22,30 @@ Cartridge::Cartridge(std::vector<unsigned char> cartridgeData) : ROM(cartridgeDa
 	headerChecksum = ROM[0x014D];
 	globalChecksum = (ROM[0x014E] << 8) | ROM[0x014F];
 
+	RAMG_REG = 0b0;
+	MODE_REG = 0b0;
+	BANK1_REG = 0x01;
+	BANK2_REG = 0x0;
+
 	switch (cartridgeType)
 	{
 		case 0x00:
-			RAM_ENABLED = false;
+			RAMG_REG = false;
 			ROM_BANKING = false;
 			break;
 
 		case 0x01:
-			RAM_ENABLED = false;
+			RAMG_REG = false;
 			ROM_BANKING = true;
-			ROM_BANK = 0x1;
 			break;
 
 		case 0x02:
-			RAM_ENABLED = true;
+			RAMG_REG = false;
 			ROM_BANKING = true;
-			ROM_BANK = 0x1;
 			break;
 
 		case 0x03:
-			RAM_ENABLED = true;
+			RAMG_REG = false;
 			ROM_BANKING = true;
 			ROM_BANK = 0x1;
 
@@ -173,64 +176,67 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 
 	else if (address >= 0xA000 && address <= 0xBFFF)
 	{
-		if (!RAM_ENABLED)
+		if (!RAMG_REG)
 			return 0xFF;
 
 		//unsigned int offset = 0x4000 * ROM_BANK;
 		//unsigned short bankAddress = address - 0xA000;
 		//unsigned int address = bankAddress + offset;
 
-		return RAM[address];
+		return RAM[(address - 0xA000) % RAM.size()];
 	}
 }
 
 void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 {
-	if (address >= 0x0000 && address <= 0x1FFF)		//Writes to this area enable the RAM
+	if (address >= 0x0000 && address <= 0x1FFF)		//Writing to this register enables/disables RAM
 	{
 		if ((value & 0x0F) == 0x0A)
-			RAM_ENABLED = true;
+			RAMG_REG = true;
 		else
-			RAM_ENABLED = false;
+			RAMG_REG = false;
+
+		return;
 	}
 
-	if (address >= 0x2000 && address <= 0x3FFF)
+	if (address >= 0x2000 && address <= 0x3FFF)		//ROM bank select register
 	{
-		switch (value)
-		{
-			case 0x0:
-				ROM_BANK = 0x1;
-				break;
+		BANK1_REG = value;
 
-			case 0x20:
-				ROM_BANK = 0x21;
-				break;
+		if (BANK1_REG == 0x00)
+			BANK1_REG |= 0x01;
 
-			case 0x40:
-				ROM_BANK = 0x41;
-				break;
-
-			case 0x60:
-				ROM_BANK = 0x61;
-				break;
-
-			default:
-				ROM_BANK = value & 0x1F;
-				break;
-		}
+		return;
 	}
 
-	if (address >= 0xA000 && address <= 0xBFFF)
+	if (address >= 0x4000 && address <= 0x5FFF)
 	{
-		RAM[address] = value;
-		/*
-		if (RAM_ENABLED && RAM_SIZE != 0)
-		{
-			auto offset = 0x2000 * RAM_BANK;
-			auto bankAddress = (address - 0xA000) + offset;
 
-			RAM[bankAddress] = value;
+	}
+
+	if (address >= 0x6000 && address <= 0x7FFF)		//Banking mode select register
+	{
+		MODE_REG = bitwise::check_bit(value, 0);
+
+		return;
+	}
+
+	if (address >= 0xA000 && address <= 0xBFFF)		//RAM bank select register
+	{
+		if (RAMG_REG)
+		{
+			if (RAM_SIZE == 0x03)
+			{
+				if (!MODE_REG)
+					RAM[address - 0xA000] = value;
+				else
+					RAM[0x2000 * BANK2_REG + (address - 0xA000)] = value;
+			}
+
+			else
+				RAM[(address - 0xA000) % RAM.size()] = value;
 		}
-		*/
+
+		return;
 	}
 }

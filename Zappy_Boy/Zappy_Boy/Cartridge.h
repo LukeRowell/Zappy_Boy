@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include "bitwise.h"
 
 class Cartridge
 {
@@ -29,7 +30,7 @@ class Cartridge
 		unsigned short ROM_BANK;
 		unsigned short RAM_BANK;
 
-		bool RAM_ENABLED;
+		
 		bool ROM_BANKING;
 
 		std::string title;
@@ -44,6 +45,11 @@ class Cartridge
 		unsigned char maskROMVersionNumber;
 		unsigned char headerChecksum;
 		unsigned short globalChecksum;
+
+		bool RAMG_REG;
+		bool MODE_REG;
+		unsigned short BANK1_REG;
+		unsigned char BANK2_REG;
 };
 
 #endif

@@ -129,6 +129,7 @@ unsigned char MMU::readMemory(unsigned short address)		//Return the value from m
 	else if (address >= 0xA000 && address <= 0xBFFF)		//Cartridge RAM
 	{
 		return cartridge.read(address);
+		//memory[address];
 	}
 
 	else if (address >= 0xC000 && address <= 0xDFFF)		//WRAM

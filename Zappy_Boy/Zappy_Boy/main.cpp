@@ -266,8 +266,8 @@ int main()
 	//--------------MBC1---------------
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/bits_ram_en.gb");				//PASS
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/multicart_rom_8mb.gb");			//FAIL			
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_64Kb.gb");
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_64Kb.gb");					//PASS
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/ram_256Kb.gb");
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_1Mb.gb");
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_2Mb.gb");
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("emulator-only/mbc1/rom_4Mb.gb");
