@@ -27,50 +27,6 @@ Cartridge::Cartridge(std::vector<unsigned char> cartridgeData) : ROM(cartridgeDa
 	BANK1_REG = 0x01;
 	BANK2_REG = 0x0;
 
-	switch (cartridgeType)
-	{
-		case 0x00:
-			RAMG_REG = false;
-			ROM_BANKING = false;
-			break;
-
-		case 0x01:
-			RAMG_REG = false;
-			ROM_BANKING = true;
-			break;
-
-		case 0x02:
-			RAMG_REG = false;
-			ROM_BANKING = true;
-			break;
-
-		case 0x03:
-			RAMG_REG = false;
-			ROM_BANKING = true;
-			ROM_BANK = 0x1;
-
-		default:
-			break;
-	}
-
-	/*switch (ROM_SIZE)		//TODO: finish adding all sizes of ROM
-	{
-		case 0x00:
-			ROM = std::vector<unsigned char>(0x8000, 0);
-			break;
-
-		case 0x01:
-			ROM = std::vector<unsigned char>(0x10000, 0);
-			break;
-
-		case 0x02:
-			ROM = std::vector<unsigned char>(0x20000, 0);
-			break;
-
-		default:
-			break;
-	}*/
-
 	switch (RAM_SIZE)
 	{
 		case 0x00:
@@ -198,11 +154,9 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 				HIGH_BANK_NUMBER = BANK1_REG & 0x1F;
 				break;
 			default:
-				HIGH_BANK_NUMBER = 0x00;
+				HIGH_BANK_NUMBER = 0x01;
 				break;
 		};
-
-		unsigned short bankAddr = 0x4000 * HIGH_BANK_NUMBER + (address - 0x4000);
 
 		return ROM[0x4000 * HIGH_BANK_NUMBER + (address - 0x4000)];
 	}
@@ -276,6 +230,9 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 					break;
 				case 0x06:
 					BANK1_REG = value & 0x1F;
+					break;
+				default:
+					BANK1_REG = 0x01;
 					break;
 			};
 		}

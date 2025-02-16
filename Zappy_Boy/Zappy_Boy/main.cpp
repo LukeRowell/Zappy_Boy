@@ -226,10 +226,10 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/bits/unused_hwio-GS.gb");				//FAIL
 	//
 	//--------------INSTR--------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/instr/daa.gb");							//PASS 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/instr/daa.gb");							//PASS 
 	//
 	//-----------INTERRUPTS------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/interrupts/ie_push.gb");					//FAIL (BGB also fails this test, but with a different error) 
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/interrupts/ie_push.gb");					//FAIL (BGB also fails this test, but with a different error) 
 	//
 	//------------OAM_DMA-------------- 
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/basic.gb");						//PASS (weird graphical artifacts due to no read/write restrictions based on PPU mode)
@@ -287,7 +287,7 @@ int main()
 	//------------------------------------------ROMS------------------------------------------
 	//
 	//--------------ROM ONLY CARTS--------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");										//Emulating TIMA interrupt causes this game to repeatedly flash at the title screen. May have something to do with the serial port/interrupt.
 	//
 	//--------------MBCX CARTS--------------
