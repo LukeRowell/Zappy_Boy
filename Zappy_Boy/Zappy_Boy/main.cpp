@@ -66,38 +66,6 @@ void eventHandler()
 {
 	sf::Event event;
 
-	/*
-	if (sf::Joystick::isButtonPressed(0, 0))
-		std::cout << "0 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 1))
-		std::cout << "1 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 2))
-		std::cout << "2 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 3))
-		std::cout << "3 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 4))
-		std::cout << "4 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 5))
-		std::cout << "5 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 6))
-		std::cout << "6 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 7))
-		std::cout << "7 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 8))
-		std::cout << "8 pressed" << std::endl;
-	if (sf::Joystick::isButtonPressed(0, 9))
-		std::cout << "9 pressed" << std::endl;
-
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) > 50)
-		std::cout << "up pressed" << std::endl;
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) < -50)
-		std::cout << "down pressed" << std::endl;
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) < -50)
-		std::cout << "left pressed" << std::endl;
-	if (sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) > 50)
-		std::cout << "right pressed" << std::endl;
-	*/
-
 	if (windowFocused)
 	{
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) > 50)
@@ -237,18 +205,18 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/oam_dma/sources-dmgABCmgbS.gb");			//FAIL 
 	//
 	//--------------PPU---------------- 
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/hblank_ly_scx_timing-GS.gb");		//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_1_2_timing-GS.gb");				//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_0_timing.gb");				//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode0_timing.gb");			//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode0_timing_sprites.gb");	//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_mode3_timing.gb");			//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/intr_2_oam_ok_timing.gb");			//FAIL (completely frozen, no screen display)
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/lcdon_timing-dmgABCmgbS.gb");		//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/lcdon_write_timing-GS.gb");			//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/stat_irq_blocking.gb");				//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/stat_lyc_onoff.gb");					//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/ppu/vblank_stat_intr-GS.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/hblank_ly_scx_timing-GS.gb");		//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_1_2_timing-GS.gb");				//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_2_0_timing.gb");				//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_2_mode0_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_2_mode0_timing_sprites.gb");	//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_2_mode3_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/intr_2_oam_ok_timing.gb");			//FAIL (completely frozen, no screen display)
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/lcdon_timing-dmgABCmgbS.gb");		//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/lcdon_write_timing-GS.gb");			//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/stat_irq_blocking.gb");				//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/stat_lyc_onoff.gb");					//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/vblank_stat_intr-GS.gb");			//FAIL (completely frozen, no screen display)
 	//
 	//-------------SERIAL-------------- 
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance/serial/boot_sclk_align-dmgABCmgb.gb");	//FAIL

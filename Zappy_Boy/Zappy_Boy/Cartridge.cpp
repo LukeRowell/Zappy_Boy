@@ -192,6 +192,9 @@ unsigned char Cartridge::readMBC1(const unsigned short address)
 
 void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 {
+	//if (RAM_SIZE == 0x00)
+	//	return;
+
 	if (address >= 0x0000 && address <= 0x1FFF)		//Writing to this register enables/disables RAM
 	{
 		if ((value & 0x0F) == 0x0A)
@@ -256,16 +259,21 @@ void Cartridge::writeMBC1(const unsigned short address, unsigned char value)
 	{
 		if (RAMG_REG)
 		{
-			if (RAM_SIZE == 0x03)
+			switch (RAM_SIZE)
 			{
-				if (!MODE_REG)
-					RAM[address - 0xA000] = value;
-				else
-					RAM[0x2000 * BANK2_REG + (address - 0xA000)] = value;
-			}
-
-			else
-				RAM[(address - 0xA000) % RAM.size()] = value;
+				case 0x00:
+					return;
+					break;
+				case 0x03:
+					if (!MODE_REG)
+						RAM[address - 0xA000] = value;
+					else
+						RAM[0x2000 * BANK2_REG + (address - 0xA000)] = value;
+					break;
+				default:
+					RAM[(address - 0xA000) % RAM.size()] = value;
+					break;
+			};
 		}
 
 		return;
