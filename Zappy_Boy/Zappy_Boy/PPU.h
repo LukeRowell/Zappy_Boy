@@ -62,6 +62,8 @@ class PPU
 
 		int getCycleCount() { return cycleCount; }
 
+		std::vector<unsigned char> getTile(int tileIndex);
+
 	private:
 
 		int PPU_Mode;

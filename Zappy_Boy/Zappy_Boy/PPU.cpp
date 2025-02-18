@@ -457,8 +457,25 @@ void PPU::drawSprites()
 	}
 }
 
+std::vector<unsigned char> PPU::getTile(int tileIndex)
+{
+	std::vector<unsigned char> tileData;
+	bool isBaseAddressingMode = bitwise::check_bit(*(mmu.LCDC), 4);
+	unsigned short startAddr = isBaseAddressingMode ? 0x8000 + (tileIndex * 16) : 0x9000 + (0 * 16);
+
+	for (int i = 0; i < 16; i++)
+	{
+		tileData.push_back(mmu.readMemory(startAddr + i));
+	}
+
+	return tileData;
+}
+
 void PPU::tick(int cyclesElapsed)
 {
+
+	
+	
 	cycleCount += cyclesElapsed;
 
 	switch (PPU_Mode)
@@ -505,9 +522,37 @@ void PPU::tick(int cyclesElapsed)
 		case 2:		//Real mode 0, H-Blank
 			if (cycleCount >= CLOCKS_PER_HBLANK)
 			{
-				drawBackground();		//0:21 with just this enabled
-				drawWindow();
+				//drawBackground();		//0:21 with just this enabled
+				//drawWindow();
 				
+				for (int m = 0; m < 17; m++)
+				{
+					for (int t = 0; t < 16; t++)
+					{
+						int rowIndex = m * 8;
+						int tileIndex = (m * 16) + t;
+
+						std::vector<unsigned char> tileData = getTile(tileIndex);
+
+						for (int i = 0; i < tileData.size(); i += 2)
+						{
+							for (int j = 7; j >= 0; j--)
+							{
+								if (!bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))		//00
+									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(232, 232, 232));
+								else if (!bitwise::check_bit(tileData[i], j) && bitwise::check_bit(tileData[i + 1], j))	//01
+									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
+								else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
+									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(88, 88, 88));
+								else																					//11
+									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(16, 16, 16));
+							}
+
+							rowIndex++;
+						}
+					}
+				}
+
 				line++;
 				mmu.updateLY(line);
 

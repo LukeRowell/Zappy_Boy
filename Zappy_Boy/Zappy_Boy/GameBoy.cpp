@@ -144,12 +144,6 @@ void GameBoy::powerOn(std::function <bool()> checkWindow, std::function<void(con
 {
 	ppu.setupDrawFunction(draw);
 
-	/*
-		int cyclesElapsed = cpu.tick();
-		ppu.tick(cyclesElapsed);
-		cpu.updateTimer(cyclesElapsed);
-	*/
-
 	while (checkWindow())
 	{
 		int cyclesElapsed = cpu.tick();
@@ -157,7 +151,6 @@ void GameBoy::powerOn(std::function <bool()> checkWindow, std::function<void(con
 		ppu.tick(cyclesElapsed);
 
 		cpu.updateTimer(cyclesElapsed);
-		//pressButton(6);
 	}
 }
 
