@@ -253,8 +253,8 @@ int main()
 	//------------------------------------------ROMS------------------------------------------
 	//
 	//--------------ROM ONLY CARTS--------------
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");										//Emulating TIMA interrupt causes this game to repeatedly flash at the title screen. May have something to do with the serial port/interrupt.
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");										//Emulating TIMA interrupt causes this game to repeatedly flash at the title screen. May have something to do with the serial port/interrupt.
 	//
 	//--------------MBCX CARTS--------------
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Super_Mario_Land.gb");												//MBC1

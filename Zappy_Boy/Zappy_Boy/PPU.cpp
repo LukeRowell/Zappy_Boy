@@ -290,7 +290,7 @@ void PPU::drawBackground()
 
 			tile_id_address = map_start_addr + tile_index;
 
-			tile_id = mmu.readMemory(tile_id_address);
+			tile_id = mmu.read(tile_id_address);
 
 			//backgroundTileSelect ? tile_offset = tile_id * TILE_BYTES : tile_offset = ((signed char)tile_id + 128) * TILE_BYTES;
 			//backgroundTileSelect ? tile_offset = ((signed char)tile_id + 128) * TILE_BYTES : tile_offset = tile_id * TILE_BYTES;
@@ -303,8 +303,8 @@ void PPU::drawBackground()
 			tile_start = tile_start_addr + tile_offset;
 			tile_line_start = tile_start_addr + tile_offset + index_into_tile;
 
-			firstPixels = mmu.readMemory(tile_line_start);
-			secondPixels = mmu.readMemory(tile_line_start + 1);
+			firstPixels = mmu.read(tile_line_start);
+			secondPixels = mmu.read(tile_line_start + 1);
 
 			colorForPixel = getColor(get_pixel(firstPixels, secondPixels, x_in_tile));
 			//colorForPixel = sf::Color::Red;
@@ -358,7 +358,7 @@ void PPU::drawWindow()
 
 			tile_id_address = map_start_addr + tile_index;
 
-			tile_id = mmu.readMemory(tile_id_address);
+			tile_id = mmu.read(tile_id_address);
 
 			backgroundAndWindowTileSelect ? tile_offset = tile_id * TILE_BYTES : tile_offset = ((signed char)tile_id + 128) * TILE_BYTES;
 
@@ -367,8 +367,8 @@ void PPU::drawWindow()
 			tile_start = tile_start_addr + tile_offset;
 			tile_line_start = tile_start_addr + tile_offset + index_into_tile;
 
-			firstPixels = mmu.readMemory(tile_line_start);
-			secondPixels = mmu.readMemory(tile_line_start + 1);
+			firstPixels = mmu.read(tile_line_start);
+			secondPixels = mmu.read(tile_line_start + 1);
 
 			colorForPixel = getColor(get_pixel(firstPixels, secondPixels, x_in_tile));
 
@@ -386,8 +386,8 @@ void PPU::drawSprites()
 		offset_in_oam = i * SPRITE_BYTES;
 		oam_start = 0xFE00 + offset_in_oam;
 
-		unsigned char sprite_y = mmu.readMemory(oam_start);
-		unsigned char sprite_x = mmu.readMemory(oam_start + 1);
+		unsigned char sprite_y = mmu.read(oam_start);
+		unsigned char sprite_x = mmu.read(oam_start + 1);
 
 		if (sprite_y == 0 || sprite_y >= 160)
 		{
@@ -403,8 +403,8 @@ void PPU::drawSprites()
 
 		unsigned short tile_set_location = 0x8000;
 
-		unsigned char pattern_i = mmu.readMemory(oam_start + 2);
-		unsigned char sprite_attrs = mmu.readMemory(oam_start + 3);
+		unsigned char pattern_i = mmu.read(oam_start + 2);
+		unsigned char sprite_attrs = mmu.read(oam_start + 3);
 
 		bool use_palette_1 = bitwise::check_bit(sprite_attrs, 4);
 		bool flip_x = bitwise::check_bit(sprite_attrs, 5);
@@ -465,17 +465,78 @@ std::vector<unsigned char> PPU::getTile(int tileIndex)
 
 	for (int i = 0; i < 16; i++)
 	{
-		tileData.push_back(mmu.readMemory(startAddr + i));
+		tileData.push_back(mmu.read(startAddr + i));
 	}
 
 	return tileData;
 }
 
+std::vector<unsigned char> PPU::getBackgroundMap(int tileIndex)
+{
+	std::vector<unsigned char> mapData;
+	bool isBaseAddressingMode = bitwise::check_bit(*(mmu.LCDC), 4);
+	unsigned short startAddr = isBaseAddressingMode ? 0x9800 + (tileIndex * 16) : 0x9000 + (0 * 16);
+
+	for (int i = 0; i < 32; i++)
+	{
+		mapData.push_back(mmu.read(startAddr + i));
+	}
+
+	return mapData;
+}
+
+void PPU::drawBG()
+{
+	for (int m = 0; m < 18; m++)
+	{
+		for (int t = 0; t < 20; t++)
+		{
+			int rowIndex = m * 8;
+			int mapIndex = (m * 32) + t;
+
+			unsigned char tilesetIndex = mmu.read(0x9800 + mapIndex);
+			std::vector<unsigned char> tileData = getTile(tilesetIndex);
+
+			for (int i = 0; i < tileData.size(); i += 2)
+			{
+				for (int j = 7; j >= 0; j--)
+				{
+					if (!bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))		//00
+						buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(232, 232, 232));
+					else if (!bitwise::check_bit(tileData[i], j) && bitwise::check_bit(tileData[i + 1], j))	//01
+						buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(88, 88, 88));
+					else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
+						buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
+					else																					//11
+						buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(16, 16, 16));
+				}
+
+				rowIndex++;
+			}
+		}
+	}
+}
+
 void PPU::tick(int cyclesElapsed)
 {
+	/*
+	switch (PPU_Mode)
+	{
+		case 0:			//OAM SCAN (80 dots)
+			
+			break;
+		case 1:			//DRAW (172 - 289 dots)
 
-	
-	
+			break;
+		case 2:			//H-BLANK (87 - 294 dots)
+
+			break;
+		case 3:			//V-BLANK (4560 dots total, 10 lines with 456 per line)
+
+			break;	
+	}
+	*/
+
 	cycleCount += cyclesElapsed;
 
 	switch (PPU_Mode)
@@ -485,8 +546,8 @@ void PPU::tick(int cyclesElapsed)
 			{
 				cycleCount = cycleCount % CLOCKS_PER_SCANLINE_OAM;
 				//cycleCount = 0;
-				mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x01);
-				mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x02);
+				mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
+				mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 				PPU_Mode = 1;
 			}
 			break;
@@ -502,7 +563,7 @@ void PPU::tick(int cyclesElapsed)
 
 				if (hblank_interrupt)
 				{
-					mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x02);
+					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 				}
 
 				bool lyc_interrupt = bitwise::check_bit(*(mmu.STAT), 6);
@@ -510,21 +571,24 @@ void PPU::tick(int cyclesElapsed)
 
 				if (lyc_interrupt && lyc)
 				{
-					mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x02);
+					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 				}
 
-				lyc ? mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x04) : mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFB);
-				mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFE);
-				mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFD);
+				lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
+				mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+				mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
 			}
 			break;
 
 		case 2:		//Real mode 0, H-Blank
 			if (cycleCount >= CLOCKS_PER_HBLANK)
 			{
-				//drawBackground();		//0:21 with just this enabled
-				//drawWindow();
+				drawBackground();		//0:21 with just this enabled
+				drawWindow();
 				
+				//drawBG();
+
+				/*
 				for (int m = 0; m < 17; m++)
 				{
 					for (int t = 0; t < 16; t++)
@@ -541,9 +605,9 @@ void PPU::tick(int cyclesElapsed)
 								if (!bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))		//00
 									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(232, 232, 232));
 								else if (!bitwise::check_bit(tileData[i], j) && bitwise::check_bit(tileData[i + 1], j))	//01
-									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
-								else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
 									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(88, 88, 88));
+								else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
+									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
 								else																					//11
 									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(16, 16, 16));
 							}
@@ -552,7 +616,7 @@ void PPU::tick(int cyclesElapsed)
 						}
 					}
 				}
-
+				*/
 				line++;
 				mmu.updateLY(line);
 
@@ -563,17 +627,17 @@ void PPU::tick(int cyclesElapsed)
 				//if(*(mmu.LY))
 				{
 					PPU_Mode = 3;
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x01);
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFD);
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
 
-					mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x01);
+					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x01);
 				}
 
 				else
 				{
 					PPU_Mode = 0;
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFE);
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x02);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 				}
 			}
 			break;
@@ -597,10 +661,10 @@ void PPU::tick(int cyclesElapsed)
 
 					buffer.reset();
 					line = 0;
-					mmu.writeMemory(0xFF44, 0x00);
+					mmu.write(0xFF44, 0x00);
 					PPU_Mode = 0;
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) & 0xFE);
-					mmu.writeMemory(0xFF41, mmu.readMemory(0xFF41) | 0x02);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 				}
 			}
 			break;

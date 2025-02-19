@@ -743,49 +743,6 @@ void CPU::updateTimer(int cyclesElapsed)
 		if (prevTIMA > mmu.readMemory(0xFF05))
 			mmu.TIMAOverflow = true;
 	}
-
-	/*
-	if ((currentTAC & 0x04) != 0)
-	{
-		if ((currentTAC & 0x02) == 0 && (currentTAC & 0x01) == 0)
-		{
-			timer += cyclesElapsed;
-			timerFull += cyclesElapsed;
-		}
-
-		else if ((currentTAC & 0x02) == 0 && (currentTAC & 0x01) != 0)
-		{
-			timer += cyclesElapsed;
-			timerFull += cyclesElapsed;
-		}
-
-		else if ((currentTAC & 0x02) != 0 && (currentTAC & 0x01) == 0)
-		{
-			timer += cyclesElapsed;
-			timerFull += cyclesElapsed;
-		}
-
-		else if ((currentTAC & 0x02) != 0 && (currentTAC & 0x01) != 0)
-		{
-			timer += cyclesElapsed;
-			timerFull += cyclesElapsed;
-		}
-	}
-	
-	if (timerFull > 0x00FF)
-	{
-		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));
-		timer = currentTMA;
-		//setIF(0xE4);
-		mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
-	}
-
-	else
-	{
-		mmu.writeMemory(0xFF05, timer);
-	}
-	*/
-
 }
 
 void CPU::addCycles(int cyclesToAdd)

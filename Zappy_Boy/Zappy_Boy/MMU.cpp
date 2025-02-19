@@ -106,6 +106,8 @@ MMU::~MMU()
 
 unsigned char MMU::readMemory(unsigned short address)		//Return the value from memory located at specified address
 {
+	ppu.tick(1);
+
 	assert(address >= 0x0000 && address <= 0xFFFF);
 
 	if (address >= 0x0000 && address <= 0x7FFF)		//Cartridge ROM
@@ -178,6 +180,8 @@ unsigned char MMU::readMemory(unsigned short address)		//Return the value from m
 
 void MMU::writeMemory(unsigned short address, unsigned char value)		//Write the specified value to memory at the specified address
 {
+	ppu.tick(1);
+
 	assert(address >= 0x0000 && address <= 0xFFFF);
 
 	if (address >= 0x0000 && address <= 0x7FFF)		//Writing to the cartridge ROM (valid only for games using an MBC)

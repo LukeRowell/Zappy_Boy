@@ -54,7 +54,7 @@ class PPU
 
 		void drawSprites();
 
-		void tick(int elapsedCycles);
+		void tick(int cyclesElapsed);
 		unsigned char line = 0x00;
 
 		sf::Color callGetPixel(unsigned int x, unsigned int y) const;
@@ -63,6 +63,14 @@ class PPU
 		int getCycleCount() { return cycleCount; }
 
 		std::vector<unsigned char> getTile(int tileIndex);
+
+		std::vector<unsigned char> getBackgroundMap(int tileIndex);
+
+		void drawBG();
+
+		void drawWin();
+
+		void drawObjects();
 
 	private:
 
@@ -111,6 +119,7 @@ class PPU
 
 		Buffer buffer;
 
+		std::stringstream ss;
 		//std::function<void(std::vector<sf::Color>&)> draw;
 		std::function<void(const Buffer &buffer)> draw;
 
