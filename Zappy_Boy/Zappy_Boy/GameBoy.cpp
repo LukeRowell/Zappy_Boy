@@ -148,7 +148,7 @@ void GameBoy::powerOn(std::function <bool()> checkWindow, std::function<void(con
 	{
 		int cyclesElapsed = cpu.tick();
 
-		ppu.tick(cyclesElapsed);
+		ppu.tick(4);
 
 		cpu.updateTimer(cyclesElapsed);
 	}

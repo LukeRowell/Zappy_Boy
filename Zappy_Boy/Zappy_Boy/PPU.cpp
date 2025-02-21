@@ -487,6 +487,15 @@ std::vector<unsigned char> PPU::getBackgroundMap(int tileIndex)
 
 void PPU::drawBG()
 {
+	unsigned char SCX = *(mmu.SCX);
+	unsigned char SCY = *(mmu.SCY);
+	unsigned short startAddr = bitwise::check_bit(*(mmu.LCDC), 4) ? 0x8000 : 0x9000;
+	int tileStartIndex = floor(SCX / 8);
+	int indexIntoStartTile = SCX % 8;
+
+
+
+
 	for (int m = 0; m < 18; m++)
 	{
 		for (int t = 0; t < 20; t++)
@@ -517,161 +526,185 @@ void PPU::drawBG()
 	}
 }
 
+void PPU::searchOAM()
+{
+
+}
+
 void PPU::tick(int cyclesElapsed)
 {
-	/*
-	switch (PPU_Mode)
+	bool displayEnabled = bitwise::check_bit(*(mmu.LCDC), 7);
+
+	if (!displayEnabled)
+		return;
+
+	while (cyclesElapsed > 0)
 	{
-		case 0:			//OAM SCAN (80 dots)
-			
-			break;
-		case 1:			//DRAW (172 - 289 dots)
+		cycleCount++;
 
-			break;
-		case 2:			//H-BLANK (87 - 294 dots)
+		switch (PPU_Mode)
+		{
+			case 0:			//OAM SCAN (80 dots)
+				searchOAM();
+				break;
+			case 1:			//DRAW (172 - 289 dots)
 
-			break;
-		case 3:			//V-BLANK (4560 dots total, 10 lines with 456 per line)
+				break;
+			case 2:			//H-BLANK (87 - 294 dots)
 
-			break;	
+				break;
+			case 3:			//V-BLANK (4560 dots total, 10 lines with 456 per line)
+
+				break;
+		}
+
+		cyclesElapsed--;
 	}
-	*/
 
-	cycleCount += cyclesElapsed;
 
-	switch (PPU_Mode)
+
+	/*
+	while (cyclesElapsed > 0)
 	{
-		case 0:		//Real mode 2, OAM search
-			if (cycleCount >= CLOCKS_PER_SCANLINE_OAM)
-			{
-				cycleCount = cycleCount % CLOCKS_PER_SCANLINE_OAM;
-				//cycleCount = 0;
-				mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
-				mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
-				PPU_Mode = 1;
-			}
-			break;
+		cycleCount++;
 
-		case 1:		//Real mode 3, data transfer to LCD driver
-			if (cycleCount >= CLOCKS_PER_SCANLINE_VRAM)
-			{
-				cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
-				//cycleCount = 0;
-				PPU_Mode = 2;
-
-				bool hblank_interrupt = bitwise::check_bit(*(mmu.STAT), 3);
-
-				if (hblank_interrupt)
+		switch (PPU_Mode)
+		{
+			case 0:		//Real mode 2, OAM search
+				if (cycleCount >= CLOCKS_PER_SCANLINE_OAM)
 				{
-					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
+					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_OAM;
+					//cycleCount = 0;
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+					PPU_Mode = 1;
 				}
+				break;
 
-				bool lyc_interrupt = bitwise::check_bit(*(mmu.STAT), 6);
-				bool lyc = (*(mmu.LYC) == line);
-
-				if (lyc_interrupt && lyc)
+			case 1:		//Real mode 3, data transfer to LCD driver
+				if (cycleCount >= CLOCKS_PER_SCANLINE_VRAM)
 				{
-					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
-				}
+					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
+					//cycleCount = 0;
+					PPU_Mode = 2;
 
-				lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
-				mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
-				mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
-			}
-			break;
+					bool hblank_interrupt = bitwise::check_bit(*(mmu.STAT), 3);
 
-		case 2:		//Real mode 0, H-Blank
-			if (cycleCount >= CLOCKS_PER_HBLANK)
-			{
-				drawBackground();		//0:21 with just this enabled
-				drawWindow();
-				
-				//drawBG();
-
-				/*
-				for (int m = 0; m < 17; m++)
-				{
-					for (int t = 0; t < 16; t++)
+					if (hblank_interrupt)
 					{
-						int rowIndex = m * 8;
-						int tileIndex = (m * 16) + t;
+						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
+					}
 
-						std::vector<unsigned char> tileData = getTile(tileIndex);
+					bool lyc_interrupt = bitwise::check_bit(*(mmu.STAT), 6);
+					bool lyc = (*(mmu.LYC) == line);
 
-						for (int i = 0; i < tileData.size(); i += 2)
+					if (lyc_interrupt && lyc)
+					{
+						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
+					}
+
+					lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
+				}
+				break;
+
+			case 2:		//Real mode 0, H-Blank
+				if (cycleCount >= CLOCKS_PER_HBLANK)
+				{
+					drawBackground();		//0:21 with just this enabled
+					drawWindow();
+
+					//drawBG();
+
+					
+					for (int m = 0; m < 17; m++)
+					{
+						for (int t = 0; t < 16; t++)
 						{
-							for (int j = 7; j >= 0; j--)
-							{
-								if (!bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))		//00
-									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(232, 232, 232));
-								else if (!bitwise::check_bit(tileData[i], j) && bitwise::check_bit(tileData[i + 1], j))	//01
-									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(88, 88, 88));
-								else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
-									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
-								else																					//11
-									buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(16, 16, 16));
-							}
+							int rowIndex = m * 8;
+							int tileIndex = (m * 16) + t;
 
-							rowIndex++;
+							std::vector<unsigned char> tileData = getTile(tileIndex);
+
+							for (int i = 0; i < tileData.size(); i += 2)
+							{
+								for (int j = 7; j >= 0; j--)
+								{
+									if (!bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))		//00
+										buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(232, 232, 232));
+									else if (!bitwise::check_bit(tileData[i], j) && bitwise::check_bit(tileData[i + 1], j))	//01
+										buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(88, 88, 88));
+									else if (bitwise::check_bit(tileData[i], j) && !bitwise::check_bit(tileData[i + 1], j))	//10
+										buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(160, 160, 160));
+									else																					//11
+										buffer.set_pixel((7 - j) + (t * 8), rowIndex, sf::Color(16, 16, 16));
+								}
+
+								rowIndex++;
+							}
 						}
 					}
-				}
-				*/
-				line++;
-				mmu.updateLY(line);
+					
+					line++;
+					mmu.updateLY(line);
 
-				cycleCount = cycleCount % CLOCKS_PER_HBLANK;
-				//cycleCount = 0;
+					cycleCount = cycleCount % CLOCKS_PER_HBLANK;
+					//cycleCount = 0;
 
-				if (line == 144)
-				//if(*(mmu.LY))
-				{
-					PPU_Mode = 3;
-					mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
-					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
-
-					mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x01);
-				}
-
-				else
-				{
-					PPU_Mode = 0;
-					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
-					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
-				}
-			}
-			break;
-
-		case 3:		//Real mode 1, V-Blank
-			if (cycleCount >= CLOCKS_PER_SCANLINE)
-			//if(cycleCount >= CLOCKS_PER_VBLANK)
-			{
-				line++;
-				cycleCount = cycleCount % CLOCKS_PER_SCANLINE;
-				//cycleCount = 0;
-
-				if (line == 154)
-				{
-					if (cpu.getRefreshClocksElapsed() >= 70224)
+					if (line == 144)
+						//if(*(mmu.LY))
 					{
-						drawSprites();
-						draw(buffer);		//1:21 with just this enabled
-						cpu.setRefreshClocksElapsed(cpu.getRefreshClocksElapsed() - 70224);
+						PPU_Mode = 3;
+						mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
+						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
+
+						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x01);
 					}
 
-					buffer.reset();
-					line = 0;
-					mmu.write(0xFF44, 0x00);
-					PPU_Mode = 0;
-					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
-					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+					else
+					{
+						PPU_Mode = 0;
+						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+					}
 				}
-			}
-			break;
+				break;
 
-		default:		//Invalid PPU mode
-			break;
+			case 3:		//Real mode 1, V-Blank
+				if (cycleCount >= CLOCKS_PER_SCANLINE)
+					//if(cycleCount >= CLOCKS_PER_VBLANK)
+				{
+					line++;
+					cycleCount = cycleCount % CLOCKS_PER_SCANLINE;
+					//cycleCount = 0;
+
+					if (line == 154)
+					{
+						if (cpu.getRefreshClocksElapsed() >= 70224)
+						{
+							drawSprites();
+							draw(buffer);		//1:21 with just this enabled
+							cpu.setRefreshClocksElapsed(cpu.getRefreshClocksElapsed() - 70224);
+						}
+
+						buffer.reset();
+						line = 0;
+						mmu.write(0xFF44, 0x00);
+						PPU_Mode = 0;
+						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+					}
+				}
+				break;
+
+			default:		//Invalid PPU mode
+				break;
+		}
+
+		cyclesElapsed--;
 	}
+	*/
 }
 
 sf::Color PPU::callGetPixel(unsigned int x, unsigned int y) const

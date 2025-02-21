@@ -72,6 +72,8 @@ class PPU
 
 		void drawObjects();
 
+		void searchOAM();
+
 	private:
 
 		int PPU_Mode;
