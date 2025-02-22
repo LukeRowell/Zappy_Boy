@@ -489,13 +489,87 @@ void PPU::drawBG()
 {
 	unsigned char SCX = *(mmu.SCX);
 	unsigned char SCY = *(mmu.SCY);
+	unsigned char LY = *(mmu.LY);
 	unsigned short startAddr = bitwise::check_bit(*(mmu.LCDC), 4) ? 0x8000 : 0x9000;
 	int tileStartIndex = floor(SCX / 8);
 	int indexIntoStartTile = SCX % 8;
+	int bgRowIndex = 0;
+	std::vector<unsigned char> tiles;
 
 
+	unsigned char offset = (SCX / 8) & 0x1F + (32 * (((LY + SCY) & 0xFF) / 8));
+
+	unsigned char tilesetAddr = mmu.read(0x9800 + offset + fetcherXPos);
+
+	unsigned char tileDataLow = mmu.read(0x8000 + tilesetAddr + (2 * ((LY + SCY) % 8)));
+
+	unsigned char tileDataHigh = mmu.read(0x8000 + tilesetAddr + 1 + (2 * ((LY + SCY) % 8)));
+
+	if (!bitwise::check_bit(tileDataLow, 0) && !bitwise::check_bit(tileDataHigh, 0))
+		//buffer.set_pixel(fetcherXPos, LY, sf::Color(232, 232, 232));
+		backgroundFIFO.push(sf::Color(232, 232, 232));
+	else if (!bitwise::check_bit(tileDataLow, 0) && bitwise::check_bit(tileDataHigh, 0))
+		//buffer.set_pixel(fetcherXPos, LY, sf::Color(88, 88, 88));
+		backgroundFIFO.push(sf::Color(88, 88, 88));
+	else if (bitwise::check_bit(tileDataLow, 0) && !bitwise::check_bit(tileDataHigh, 0))
+		//buffer.set_pixel(fetcherXPos, LY, sf::Color(160, 160, 160));
+		backgroundFIFO.push(sf::Color(160, 160, 160));
+	else
+		//buffer.set_pixel(fetcherXPos, LY, sf::Color(16, 16, 16));
+		backgroundFIFO.push(sf::Color(16, 16, 16));
+
+	fetcherXPos++;
+	fetcherXPos %= 160;
+
+	//20 wide, 18 high
+	/*
+	for (int i = 0; i < 360; i++)
+	{
+		unsigned short tilesetAddr = 0x9800 + i + bgRowIndex + ((SCX / 8) % 32);
+
+		for (int i = 0; i < 16; i++)
+		{
+			tiles.push_back(mmu.read(0x8000 + i + mmu.read(tilesetAddr)));
+		}
+
+		if (i % 19 == 0 && i != 0)
+			bgRowIndex += 12;
+	}
+
+	
+	int rowIndex = 0;
+
+	int xIndex = 0;
+	int yIndex = 0;
+
+	for (int i = 0; i < 23040; i++)
+	{
+
+	}
+	*/
 
 
+	/*
+	for (int i = 0; i < tiles.size(); i += 2)
+	{
+		for (int j = 7; j >= 0; j--)
+		{
+			if (!bitwise::check_bit(tiles[i], j) && !bitwise::check_bit(tiles[i + 1], j))		//00
+				buffer.set_pixel((7 - j) + (8 * (i % 20)), rowIndex, sf::Color(232, 232, 232));
+			else if (!bitwise::check_bit(tiles[i], j) && bitwise::check_bit(tiles[i + 1], j))	//01
+				buffer.set_pixel((7 - j) + (8 * (i % 20)), rowIndex, sf::Color(88, 88, 88));
+			else if (bitwise::check_bit(tiles[i], j) && !bitwise::check_bit(tiles[i + 1], j))	//10
+				buffer.set_pixel((7 - j) + (8 * (i % 20)), rowIndex, sf::Color(160, 160, 160));
+			else																					//11
+				buffer.set_pixel((7 - j) + (8 * (i % 20)), rowIndex, sf::Color(16, 16, 16));
+		}
+
+		if (i % 19 == 0 && i != 0)
+			rowIndex += 8;
+	}
+	*/
+
+	/*
 	for (int m = 0; m < 18; m++)
 	{
 		for (int t = 0; t < 20; t++)
@@ -524,6 +598,7 @@ void PPU::drawBG()
 			}
 		}
 	}
+	*/
 }
 
 void PPU::searchOAM()
@@ -533,6 +608,7 @@ void PPU::searchOAM()
 
 void PPU::tick(int cyclesElapsed)
 {
+	/*
 	bool displayEnabled = bitwise::check_bit(*(mmu.LCDC), 7);
 
 	if (!displayEnabled)
@@ -560,10 +636,9 @@ void PPU::tick(int cyclesElapsed)
 
 		cyclesElapsed--;
 	}
+	*/
 
 
-
-	/*
 	while (cyclesElapsed > 0)
 	{
 		cycleCount++;
@@ -584,6 +659,8 @@ void PPU::tick(int cyclesElapsed)
 			case 1:		//Real mode 3, data transfer to LCD driver
 				if (cycleCount >= CLOCKS_PER_SCANLINE_VRAM)
 				{
+					drawBG();
+
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
 					//cycleCount = 0;
 					PPU_Mode = 2;
@@ -612,12 +689,15 @@ void PPU::tick(int cyclesElapsed)
 			case 2:		//Real mode 0, H-Blank
 				if (cycleCount >= CLOCKS_PER_HBLANK)
 				{
-					drawBackground();		//0:21 with just this enabled
-					drawWindow();
+					//drawBackground();		//0:21 with just this enabled
+					//drawWindow();
 
-					//drawBG();
+					sf::Color pixel = backgroundFIFO.front();
+					backgroundFIFO.pop();
 
-					
+					buffer.set_pixel(fetcherXPos, *(mmu.LY), pixel);
+
+					/*
 					for (int m = 0; m < 17; m++)
 					{
 						for (int t = 0; t < 16; t++)
@@ -645,7 +725,7 @@ void PPU::tick(int cyclesElapsed)
 							}
 						}
 					}
-					
+					*/
 					line++;
 					mmu.updateLY(line);
 
@@ -704,7 +784,6 @@ void PPU::tick(int cyclesElapsed)
 
 		cyclesElapsed--;
 	}
-	*/
 }
 
 sf::Color PPU::callGetPixel(unsigned int x, unsigned int y) const

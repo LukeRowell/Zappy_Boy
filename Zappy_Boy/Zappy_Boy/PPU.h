@@ -9,6 +9,8 @@
 #include "buffer.h"
 #include "Tile.h"
 
+#include <queue>
+
 class GameBoy;
 class CPU;
 class MMU;
@@ -75,6 +77,10 @@ class PPU
 		void searchOAM();
 
 	private:
+
+		std::queue<sf::Color> backgroundFIFO;
+
+		int fetcherXPos = 0;
 
 		int PPU_Mode;
 		unsigned int cycleCount = 0;
