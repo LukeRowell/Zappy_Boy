@@ -485,41 +485,27 @@ std::vector<unsigned char> PPU::getBackgroundMap(int tileIndex)
 	return mapData;
 }
 
-void PPU::drawBG()
+bool PPU::fetchBackgroundPixels()
 {
-	unsigned char SCX = *(mmu.SCX);
-	unsigned char SCY = *(mmu.SCY);
-	unsigned char LY = *(mmu.LY);
 	unsigned short startAddr = bitwise::check_bit(*(mmu.LCDC), 4) ? 0x8000 : 0x9000;
-	int tileStartIndex = floor(SCX / 8);
-	int indexIntoStartTile = SCX % 8;
+	//int tileStartIndex = floor(SCX / 8);
+	//int indexIntoStartTile = SCX % 8;
 	int bgRowIndex = 0;
 	std::vector<unsigned char> tiles;
 
 
-	unsigned char offset = (SCX / 8) & 0x1F + (32 * (((LY + SCY) & 0xFF) / 8));
 
-	unsigned char tilesetAddr = mmu.read(0x9800 + offset + fetcherXPos);
 
-	unsigned char tileDataLow = mmu.read(0x8000 + tilesetAddr + (2 * ((LY + SCY) % 8)));
 
-	unsigned char tileDataHigh = mmu.read(0x8000 + tilesetAddr + 1 + (2 * ((LY + SCY) % 8)));
+	//sf::Color pixel = backgroundFIFO.front();
+	//backgroundFIFO.pop();
 
-	if (!bitwise::check_bit(tileDataLow, 0) && !bitwise::check_bit(tileDataHigh, 0))
-		//buffer.set_pixel(fetcherXPos, LY, sf::Color(232, 232, 232));
-		backgroundFIFO.push(sf::Color(232, 232, 232));
-	else if (!bitwise::check_bit(tileDataLow, 0) && bitwise::check_bit(tileDataHigh, 0))
-		//buffer.set_pixel(fetcherXPos, LY, sf::Color(88, 88, 88));
-		backgroundFIFO.push(sf::Color(88, 88, 88));
-	else if (bitwise::check_bit(tileDataLow, 0) && !bitwise::check_bit(tileDataHigh, 0))
-		//buffer.set_pixel(fetcherXPos, LY, sf::Color(160, 160, 160));
-		backgroundFIFO.push(sf::Color(160, 160, 160));
-	else
-		//buffer.set_pixel(fetcherXPos, LY, sf::Color(16, 16, 16));
-		backgroundFIFO.push(sf::Color(16, 16, 16));
+	//buffer.set_pixel(fetcherXPos, line, pixel);
 
-	fetcherXPos++;
-	fetcherXPos %= 160;
+	//fetcherXPos++;
+	//fetcherXPos %= 160;
+
+	return true;
 
 	//20 wide, 18 high
 	/*
@@ -606,7 +592,7 @@ void PPU::searchOAM()
 
 }
 
-void PPU::tick(int cyclesElapsed)
+void PPU::tick(int cyclesRemaining)
 {
 	/*
 	bool displayEnabled = bitwise::check_bit(*(mmu.LCDC), 7);
@@ -638,8 +624,11 @@ void PPU::tick(int cyclesElapsed)
 	}
 	*/
 
+	unsigned char SCX = *(mmu.SCX);
+	unsigned char SCY = *(mmu.SCY);
+	unsigned char LY = *(mmu.LY);
 
-	while (cyclesElapsed > 0)
+	while (cyclesRemaining > 0)
 	{
 		cycleCount++;
 
@@ -654,12 +643,85 @@ void PPU::tick(int cyclesElapsed)
 					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 					PPU_Mode = 1;
 				}
+
+				cyclesRemaining--;
 				break;
 
 			case 1:		//Real mode 3, data transfer to LCD driver
-				if (cycleCount >= CLOCKS_PER_SCANLINE_VRAM)
+				if (cyclesRemaining >= 2)
 				{
-					drawBG();
+					switch (fetcherState)
+					{
+						case 0:
+							
+							
+							//offset = ((SCX / 8) & 0x1F + (32 * (((LY + SCY) & 0xFF) / 8))) & 0x3FF;
+							offset = (((SCX / 8) + fetcherXPos) & 0x1F) + ((LY + SCY) & 0xFF);
+							//std::cout << "fetcher x: " << fetcherXPos << std::endl;
+							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << 0x9800 + offset + fetcherXPos << std::endl;
+							//tileFetchAddr = mmu.read(0x9800 + offset + fetcherXPos) << 4;
+							tileFetchAddr = mmu.read(0x9800 + offset) << 4;
+							fetcherState++;
+							break;
+						case 1:
+							//tileDataLow = mmu.read(0x8000 + tileFetchAddr + (2 * ((LY + SCY) % 8)));
+							if (tileFetchAddr == 0x09B0)
+								tileFetchAddr = tileFetchAddr;
+
+							fetchoffset = tileFetchAddr + (2 * ((LY + SCY) % 8));
+
+							//tileDataLow = mmu.read(0x8000 + fetchoffset);
+							tileDataLow = mmu.read(0x8000 + tileFetchAddr);
+							//std::cout << "tile data low: " << std::hex << std::setfill('0') << std::setw(4) << tileDataLow << std::endl;
+							fetcherState++;
+							break;
+						case 2:
+							//tileDataHigh = mmu.read(0x8000 + tileFetchAddr + 1 + (2 * ((LY + SCY) % 8)));
+							//tileDataHigh = mmu.read(0x8000 + tileFetchAddr + 1 + (2 * ((LY + SCY) % 8)));
+							tileDataHigh = mmu.read(0x8000 + tileFetchAddr);
+							//std::cout << "tile data high: " << std::hex << std::setfill('0') << std::setw(4) << tileDataHigh << std::endl;
+							fetcherState++;
+							break;
+						case 3:
+							if (backgroundFIFO.empty())
+							{
+								for (int i = 7; i >= 0; i--)
+								{
+									if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(232, 232, 232));
+									else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(88, 88, 88));
+									else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(160, 160, 160));
+									else
+										backgroundFIFO.push(sf::Color(16, 16, 16));
+								}
+
+								fetcherState = 0;
+							}
+
+							break;
+					};
+
+					cyclesRemaining -= 2;
+				}
+
+				if (!backgroundFIFO.empty())
+				{
+					sf::Color pixel = backgroundFIFO.front();
+					backgroundFIFO.pop();
+
+					buffer.set_pixel(fetcherXPos, line, pixel);
+
+					fetcherXPos++;
+					//popcount++;
+				}
+
+				if (fetcherXPos == 160)
+				{
+					std::queue<sf::Color>().swap(backgroundFIFO);
+					fetcherXPos = 0;
+					fetcherState = 0;
 
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
 					//cycleCount = 0;
@@ -684,6 +746,13 @@ void PPU::tick(int cyclesElapsed)
 					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
 					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
 				}
+
+				cyclesRemaining--;
+
+				if (cycleCount >= CLOCKS_PER_SCANLINE_VRAM)
+				{
+
+				}
 				break;
 
 			case 2:		//Real mode 0, H-Blank
@@ -692,10 +761,6 @@ void PPU::tick(int cyclesElapsed)
 					//drawBackground();		//0:21 with just this enabled
 					//drawWindow();
 
-					sf::Color pixel = backgroundFIFO.front();
-					backgroundFIFO.pop();
-
-					buffer.set_pixel(fetcherXPos, *(mmu.LY), pixel);
 
 					/*
 					for (int m = 0; m < 17; m++)
@@ -749,6 +814,8 @@ void PPU::tick(int cyclesElapsed)
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 					}
 				}
+
+				cyclesRemaining--;
 				break;
 
 			case 3:		//Real mode 1, V-Blank
@@ -776,13 +843,13 @@ void PPU::tick(int cyclesElapsed)
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 					}
 				}
+				cyclesRemaining--;
 				break;
 
 			default:		//Invalid PPU mode
 				break;
 		}
 
-		cyclesElapsed--;
 	}
 }
 

@@ -68,7 +68,7 @@ class PPU
 
 		std::vector<unsigned char> getBackgroundMap(int tileIndex);
 
-		void drawBG();
+		bool fetchBackgroundPixels();
 
 		void drawWin();
 
@@ -80,6 +80,14 @@ class PPU
 
 		std::queue<sf::Color> backgroundFIFO;
 
+		unsigned short fetchoffset;
+		unsigned char offset;
+		unsigned short tileFetchAddr;
+		unsigned char tileDataLow;
+		unsigned char tileDataHigh;
+
+		int fetcherState = 0;
+		int popcount = 0;
 		int fetcherXPos = 0;
 
 		int PPU_Mode;
