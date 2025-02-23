@@ -80,6 +80,14 @@ class PPU
 
 		std::queue<sf::Color> backgroundFIFO;
 
+		unsigned char test;
+
+		unsigned short tileID;
+		unsigned short tilemapAddr;
+		unsigned char upperNibble;
+		unsigned char lowerNibble;
+
+		bool pixelPushed = false;
 		unsigned short fetchoffset;
 		unsigned char offset;
 		unsigned short tileFetchAddr;
