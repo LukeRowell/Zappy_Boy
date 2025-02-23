@@ -666,7 +666,7 @@ void PPU::tick(int cyclesRemaining)
 							//upperNibble = 0x0012 << 8;
 							//lowerNibble = 0x0034;
 
-							upperNibble = upperNibble << 5;
+							upperNibble = upperNibble << 5;		//TODO: Figure out what to do with lower nibble
 						
 							//upperNibble |= lowerNibble;
 
@@ -679,8 +679,10 @@ void PPU::tick(int cyclesRemaining)
 							//std::cout << "fetcher x: " << fetcherXPos << std::endl;
 							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << 0x9800 + offset + fetcherXPos << std::endl;
 
-							if (tilemapAddr == 0x9813)
-								tilemapAddr = 0x9813;
+							if (tilemapAddr == 0x98f3)
+								tilemapAddr = 0x98f3;
+
+							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << tilemapAddr << std::endl;
 
 							tileID = mmu.read(tilemapAddr);
 							tileID = tileID << 4;
@@ -764,6 +766,7 @@ void PPU::tick(int cyclesRemaining)
 
 				if (fetcherXPos == 160)
 				{
+					//std::cout << "----------------------------------------" << std::endl; //LY = " << std::hex << std::setfill('0') << std::setw(4) << LY << std::endl;
 					std::queue<sf::Color>().swap(backgroundFIFO);
 					fetcherXPos = 0;
 					fetcherState = 0;

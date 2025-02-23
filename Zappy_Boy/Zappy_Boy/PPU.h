@@ -84,7 +84,7 @@ class PPU
 
 		unsigned short tileID;
 		unsigned short tilemapAddr;
-		unsigned char upperNibble;
+		unsigned short upperNibble;
 		unsigned char lowerNibble;
 
 		bool pixelPushed = false;
