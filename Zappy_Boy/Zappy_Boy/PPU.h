@@ -80,10 +80,12 @@ class PPU
 
 		std::queue<sf::Color> backgroundFIFO;
 
+		bool startDrawing = false;
 		unsigned char test;
 
 		unsigned short tileID;
 		unsigned short tilemapAddr;
+		unsigned short prevAddr;
 		unsigned short upperNibble;
 		unsigned char lowerNibble;
 
@@ -96,7 +98,7 @@ class PPU
 
 		int fetcherState = 0;
 		int popcount = 0;
-		int fetcherXPos = 0;
+		int LX = 0;
 
 		int PPU_Mode;
 		unsigned int cycleCount = 0;

@@ -500,10 +500,10 @@ bool PPU::fetchBackgroundPixels()
 	//sf::Color pixel = backgroundFIFO.front();
 	//backgroundFIFO.pop();
 
-	//buffer.set_pixel(fetcherXPos, line, pixel);
+	//buffer.set_pixel(LX, line, pixel);
 
-	//fetcherXPos++;
-	//fetcherXPos %= 160;
+	//LX++;
+	//LX %= 160;
 
 	return true;
 
@@ -661,7 +661,7 @@ void PPU::tick(int cyclesRemaining)
 
 							tilemapAddr = 0x9800;
 
-							lowerNibble = (fetcherXPos + SCX) / 8;
+							lowerNibble = (LX + SCX) / 8;
 
 							//upperNibble = 0x0012 << 8;
 							//lowerNibble = 0x0034;
@@ -675,22 +675,32 @@ void PPU::tick(int cyclesRemaining)
 							//tilemapAddr += upperNibble;
 
 							//offset = ((SCX / 8) & 0x1F + (32 * (((LY + SCY) & 0xFF) / 8))) & 0x3FF;
-							//offset = (((SCX / 8) + fetcherXPos) & 0x1F) + ((LY + SCY) & 0xFF);
-							//std::cout << "fetcher x: " << fetcherXPos << std::endl;
-							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << 0x9800 + offset + fetcherXPos << std::endl;
+							//offset = (((SCX / 8) + LX) & 0x1F) + ((LY + SCY) & 0xFF);
+							//std::cout << "fetcher x: " << LX << std::endl;
+							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << 0x9800 + offset + LX << std::endl;
 
-							if (tilemapAddr == 0x98f3)
-								tilemapAddr = 0x98f3;
+							if (tilemapAddr == 0x9820)
+							{
+								tilemapAddr = 0x9820;
+								//buffer.reset();
+								//draw(buffer);
+							}
+
+							if (tilemapAddr == prevAddr)
+								tilemapAddr++;
 
 							//std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << tilemapAddr << std::endl;
+
 
 							tileID = mmu.read(tilemapAddr);
 							tileID = tileID << 4;
 
+							prevAddr = tilemapAddr;
+
 							//if (tileID != 0x0000)
 							//7	tileID = tileID << 4;
 
-							//tileFetchAddr = mmu.read(0x9800 + fetcherXPos) << 4;
+							//tileFetchAddr = mmu.read(0x9800 + LX) << 4;
 							fetcherState++;
 							break;
 						case 1:
@@ -698,13 +708,16 @@ void PPU::tick(int cyclesRemaining)
 							//if (tileFetchAddr != 0x00)
 							//	std::cout << "tile addr: " << std::hex << std::setfill('0') << std::setw(4) << tileFetchAddr << std::endl;
 
-							lowerNibble = (LY + SCY) % 8;
-							lowerNibble &= 0x0007;
+							lowerNibble = 2 * ((LY + SCY) % 8);
+							//lowerNibble &= 0x0007;
 
 							tileFetchAddr = 0x8000 | tileID;
 							tileFetchAddr |= lowerNibble;
 
 							tileDataLow = mmu.read(tileFetchAddr);
+
+							if (tilemapAddr == 0x9820 && tileDataLow != 0x00)
+								tilemapAddr = tilemapAddr;
 
 							//fetchoffset = tileFetchAddr + (2 * ((LY + SCY) % 8));
 
@@ -723,6 +736,7 @@ void PPU::tick(int cyclesRemaining)
 						case 3:
 							if (backgroundFIFO.empty())
 							{
+
 								for (int i = 7; i >= 0; i--)
 								{
 									if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
@@ -730,17 +744,21 @@ void PPU::tick(int cyclesRemaining)
 										//backgroundFIFO.push(sf::Color::Red);
 									else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
 										backgroundFIFO.push(sf::Color(88, 88, 88));
-										//backgroundFIFO.push(sf::Color::Red);
+										//backgroundFIFO.push(sf::Color::Green);
 									else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
 										backgroundFIFO.push(sf::Color(160, 160, 160));
-										//backgroundFIFO.push(sf::Color::Red);
+										//backgroundFIFO.push(sf::Color::Blue);
 									else
 										backgroundFIFO.push(sf::Color(16, 16, 16));
-										//backgroundFIFO.push(sf::Color::Red);
+										//backgroundFIFO.push(sf::Color::Yellow);
 								}
 
+								if (tilemapAddr == 0x9820 && tileDataLow != 0x00)
+									tilemapAddr = tilemapAddr;
+
 								fetcherState = 0;
-								//fetcherXPos++;
+
+								//LX++;
 							}
 
 							break;
@@ -754,9 +772,15 @@ void PPU::tick(int cyclesRemaining)
 					sf::Color pixel = backgroundFIFO.front();
 					backgroundFIFO.pop();
 
-					buffer.set_pixel(fetcherXPos, LY, pixel);
+					buffer.set_pixel(LX, LY, pixel);
 
-					fetcherXPos++;
+					if (tilemapAddr == 0x9820 && tileDataHigh != 0x00)
+						startDrawing = false;
+
+					if (startDrawing)
+						draw(buffer);
+
+					LX++;
 					pixelPushed = true;
 
 					//draw(buffer);
@@ -764,11 +788,11 @@ void PPU::tick(int cyclesRemaining)
 				}
 
 
-				if (fetcherXPos == 160)
+				if (LX == 160)
 				{
 					//std::cout << "----------------------------------------" << std::endl; //LY = " << std::hex << std::setfill('0') << std::setw(4) << LY << std::endl;
 					std::queue<sf::Color>().swap(backgroundFIFO);
-					fetcherXPos = 0;
+					LX = 0;
 					fetcherState = 0;
 
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
