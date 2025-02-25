@@ -64,24 +64,13 @@ class PPU
 
 		int getCycleCount() { return cycleCount; }
 
-		std::vector<unsigned char> getTile(int tileIndex);
-
-		std::vector<unsigned char> getBackgroundMap(int tileIndex);
-
-		bool fetchBackgroundPixels();
-
 		void drawWin();
 
 		void drawObjects();
 
-		void searchOAM();
-
 	private:
 
 		std::queue<sf::Color> backgroundFIFO;
-
-		bool startDrawing = false;
-		unsigned char test;
 
 		unsigned short tileID;
 		unsigned short tilemapAddr;
@@ -97,7 +86,6 @@ class PPU
 		unsigned char tileDataHigh;
 
 		int fetcherState = 0;
-		int popcount = 0;
 		int LX = 0;
 
 		int PPU_Mode;
@@ -140,13 +128,9 @@ class PPU
 
 		Palette palette;
 		
-		//std::vector<sf::Color> pixels;
-		//sf::Color pixels[23040];
-
 		Buffer buffer;
 
 		std::stringstream ss;
-		//std::function<void(std::vector<sf::Color>&)> draw;
 		std::function<void(const Buffer &buffer)> draw;
 
 		CPU& cpu;
