@@ -72,6 +72,11 @@ class PPU
 
 		std::queue<sf::Color> backgroundFIFO;
 
+		bool doneDiscarding = false;
+		unsigned char totalDiscarded = 0;
+		unsigned char discardCount = 0;
+		bool newScanline = true;
+
 		unsigned short tileID;
 		unsigned short tilemapAddr;
 		unsigned short prevAddr;

@@ -461,11 +461,17 @@ void PPU::tick(int cyclesRemaining)
 {
 	unsigned char SCX = *(mmu.SCX);
 	unsigned char SCY = *(mmu.SCY);
+	unsigned char WX = *(mmu.WX);
+	unsigned char WY = *(mmu.WY);
 	unsigned char LY = *(mmu.LY);
+	unsigned char LCDC = *(mmu.LCDC);
 
 	while (cyclesRemaining > 0)
 	{
 		cycleCount++;
+
+		if (newScanline)
+			discardCount = SCX % 8;
 
 		switch (PPU_Mode)
 		{
@@ -474,8 +480,8 @@ void PPU::tick(int cyclesRemaining)
 				{
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_OAM;
 
-					mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
-					mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
+					mmu.write(0xFF41, mmu.read(0xFF41) | 0x03);
 
 					PPU_Mode = 1;
 				}
@@ -489,13 +495,24 @@ void PPU::tick(int cyclesRemaining)
 					switch (fetcherState)
 					{
 						case 0:
-							tilemapAddr = 0x9800;
+							if (!bitwise::check_bit(LCDC, 5))	//Background mode
+							{
+								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
+								
+								upperNibble = (LY + SCY) / 8;
+								lowerNibble = (LX + SCX) / 8;
+							}
 
-							upperNibble = (LY + SCY) / 8;
+							else	//Window mode
+							{
+								tilemapAddr = !bitwise::check_bit(LCDC, 6) ? 0x9800 : 0x9C00;
+
+								upperNibble = WY / 8;
+								lowerNibble = LX / 8;
+							}
+
 							upperNibble = upperNibble << 5;
 
-							lowerNibble = (LX + SCX) / 8;
-						
 							tilemapAddr += upperNibble;
 							tilemapAddr += lowerNibble;
 							
@@ -510,10 +527,21 @@ void PPU::tick(int cyclesRemaining)
 							fetcherState++;
 							break;
 						case 1:
-							tileFetchAddr = 0x8000 | tileID;
+							if (bitwise::check_bit(LCDC, 4))
+								tileFetchAddr = 0x8000 + tileID;
+							else
+								tileFetchAddr = 0x9000 + static_cast<short>(tileID);
+														
+							//tileFetchAddr |= tileID;
 
-							lowerNibble = 2 * ((LY + SCY) % 8);
+							lowerNibble = !bitwise::check_bit(LCDC, 5) ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
 							tileFetchAddr |= lowerNibble;
+
+							if ((tileFetchAddr & 0x0001) != 0x0000)
+								tileFetchAddr = tileFetchAddr;
+
+
+							//TODO: Horizontal and vertical flip tile data here
 
 							tileDataLow = mmu.read(tileFetchAddr);
 
@@ -552,10 +580,17 @@ void PPU::tick(int cyclesRemaining)
 					sf::Color pixel = backgroundFIFO.front();
 					backgroundFIFO.pop();
 
-					buffer.set_pixel(LX, LY, pixel);
-										
-					LX++;
-					pixelPushed = true;
+					totalDiscarded++;
+
+					if (totalDiscarded == discardCount)
+						doneDiscarding = true;
+
+					if (doneDiscarding)
+					{
+						buffer.set_pixel(LX, LY, pixel);
+						LX++;
+						pixelPushed = true;
+					}
 				}
 
 				if (LX == 160)
@@ -563,6 +598,8 @@ void PPU::tick(int cyclesRemaining)
 					std::queue<sf::Color>().swap(backgroundFIFO);
 					LX = 0;
 					fetcherState = 0;
+					doneDiscarding = false;
+					newScanline = true;
 
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
 					PPU_Mode = 2;
@@ -583,8 +620,8 @@ void PPU::tick(int cyclesRemaining)
 					}
 
 					lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
-					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
-					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
+
+					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 				}
 
 				cyclesRemaining--;
@@ -602,8 +639,8 @@ void PPU::tick(int cyclesRemaining)
 						//if(*(mmu.LY))
 					{
 						PPU_Mode = 3;
+						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
-						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFD);
 
 						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x01);
 					}
@@ -611,7 +648,7 @@ void PPU::tick(int cyclesRemaining)
 					else
 					{
 						PPU_Mode = 0;
-						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
+						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 					}
 				}
@@ -629,7 +666,7 @@ void PPU::tick(int cyclesRemaining)
 					{
 						if (cpu.getRefreshClocksElapsed() >= 70224)
 						{
-							drawSprites();
+							//drawSprites();
 							draw(buffer);		
 							cpu.setRefreshClocksElapsed(cpu.getRefreshClocksElapsed() - 70224);
 						}

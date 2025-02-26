@@ -357,6 +357,7 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF41:		//STAT
+			value = ((value | 0x80) & 0xF8) | (memory[0xFF41] & 0x07);		//Keep upper bit set, and lower 3 bits are read only
 			write(0xFF41, value);
 			break;
 
