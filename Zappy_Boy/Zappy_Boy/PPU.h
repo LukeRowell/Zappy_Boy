@@ -77,7 +77,10 @@ class PPU
 		unsigned char discardCount = 0;
 		bool newScanline = true;
 
+		signed short test;
+
 		unsigned short tileID;
+		signed char signedTileID;
 		unsigned short tilemapAddr;
 		unsigned short prevAddr;
 		unsigned short upperNibble;
@@ -87,6 +90,7 @@ class PPU
 		unsigned short fetchoffset;
 		unsigned char offset;
 		unsigned short tileFetchAddr;
+		signed short tileFetchAddrSigned;
 		unsigned char tileDataLow;
 		unsigned char tileDataHigh;
 

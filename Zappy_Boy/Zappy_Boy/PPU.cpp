@@ -498,7 +498,8 @@ void PPU::tick(int cyclesRemaining)
 							if (!bitwise::check_bit(LCDC, 5))	//Background mode
 							{
 								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
-								
+
+
 								upperNibble = (LY + SCY) / 8;
 								lowerNibble = (LX + SCX) / 8;
 							}
@@ -511,6 +512,7 @@ void PPU::tick(int cyclesRemaining)
 								lowerNibble = LX / 8;
 							}
 
+
 							upperNibble = upperNibble << 5;
 
 							tilemapAddr += upperNibble;
@@ -519,8 +521,18 @@ void PPU::tick(int cyclesRemaining)
 							if (tilemapAddr == prevAddr)
 								tilemapAddr++;
 
+
+							//std::cout << std::hex << std::setfill('0') << std::setw(4) << tilemapAddr << std::endl;
+
 							tileID = mmu.read(tilemapAddr);
+							signedTileID = mmu.read(tilemapAddr);
+
+							if (tilemapAddr == 0x9862 && tileID == 0xFD)
+								tilemapAddr = 0x9862;
+
 							tileID = tileID << 4;
+
+							test = signedTileID;
 
 							prevAddr = tilemapAddr;
 
@@ -530,7 +542,7 @@ void PPU::tick(int cyclesRemaining)
 							if (bitwise::check_bit(LCDC, 4))
 								tileFetchAddr = 0x8000 + tileID;
 							else
-								tileFetchAddr = 0x9000 + static_cast<short>(tileID);
+								tileFetchAddr = 0x9000 + (signedTileID * 16);
 														
 							//tileFetchAddr |= tileID;
 
@@ -595,6 +607,8 @@ void PPU::tick(int cyclesRemaining)
 
 				if (LX == 160)
 				{
+					//std::cout << "----------------------------------------------" << std::endl;
+
 					std::queue<sf::Color>().swap(backgroundFIFO);
 					LX = 0;
 					fetcherState = 0;
@@ -613,6 +627,9 @@ void PPU::tick(int cyclesRemaining)
 
 					bool lyc_interrupt = bitwise::check_bit(*(mmu.STAT), 6);
 					bool lyc = (*(mmu.LYC) == line);
+
+					if (lyc)
+						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 
 					if (lyc_interrupt && lyc)
 					{
@@ -666,7 +683,7 @@ void PPU::tick(int cyclesRemaining)
 					{
 						if (cpu.getRefreshClocksElapsed() >= 70224)
 						{
-							//drawSprites();
+							drawSprites();
 							draw(buffer);		
 							cpu.setRefreshClocksElapsed(cpu.getRefreshClocksElapsed() - 70224);
 						}

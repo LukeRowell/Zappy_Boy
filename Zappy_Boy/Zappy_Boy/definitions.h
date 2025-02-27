@@ -9,7 +9,7 @@ const unsigned int CLOCKS_PER_HBLANK = 204; /* Mode 0 */
 //const unsigned int CLOCKS_PER_HBLANK = 456;
 const unsigned int CLOCKS_PER_VBLANK = 4560; /* Mode 1 */
 const unsigned int CLOCKS_PER_SCANLINE_OAM = 80; /* Mode 2 */
-const unsigned int CLOCKS_PER_SCANLINE_VRAM = 172; /* Mode 3 */
+const unsigned int CLOCKS_PER_SCANLINE_VRAM = 174; /* Mode 3 */
 
 //const unsigned int CLOCKS_PER_HBLANK = 51;
 //const unsigned int CLOCKS_PER_VBLANK = 1140;
