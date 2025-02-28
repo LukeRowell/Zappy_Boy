@@ -10,7 +10,7 @@ class Sprite
 
 		unsigned char yPos;
 		unsigned char xPos;
-		unsigned char tileIndex;
+		unsigned short tileIndex;
 		unsigned char attributeFlags;
 
 		bool priority = bitwise::check_bit(attributeFlags, 7);

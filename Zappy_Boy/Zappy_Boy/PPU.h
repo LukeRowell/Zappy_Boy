@@ -9,6 +9,7 @@
 #include "buffer.h"
 #include "Tile.h"
 
+#include "Sprite.h"
 #include <queue>
 
 class GameBoy;
@@ -71,6 +72,10 @@ class PPU
 	private:
 
 		std::queue<sf::Color> backgroundFIFO;
+		std::queue<sf::Color> spriteFIFO;
+
+		bool spriteFetch = false;
+		int spriteIndex = 0;
 
 		bool doneDiscarding = false;
 		unsigned char totalDiscarded = 0;
@@ -78,6 +83,16 @@ class PPU
 		bool newScanline = true;
 
 		signed short test;
+
+		unsigned char oamIndex;
+		unsigned short oamStartAddr = 0xFE00;
+		unsigned char yPos;
+		unsigned char xPos;
+		unsigned char tileIndex;
+		unsigned char attributeFlags;
+
+		Sprite curSprite;
+		std::vector<Sprite> spriteBuffer;
 
 		unsigned short tileID;
 		signed char signedTileID;
@@ -94,7 +109,8 @@ class PPU
 		unsigned char tileDataLow;
 		unsigned char tileDataHigh;
 
-		int fetcherState = 0;
+		int bgFetcherState = 0;
+		int spriteFetcherState = 0;
 		int LX = 0;
 
 		int PPU_Mode;
