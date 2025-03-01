@@ -518,7 +518,7 @@ void PPU::tick(int cyclesRemaining)
 
 				if (spriteFetch)	//Fetching sprite
 				{
-					bgFetcherState = 0;
+					//bgFetcherState = 0;
 
 					switch (spriteFetcherState)
 					{
@@ -547,12 +547,16 @@ void PPU::tick(int cyclesRemaining)
 							{
 								if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
 									spriteFIFO.push(sf::Color(232, 232, 232));
+									//spriteFIFO.push(sf::Color(255, 0, 0));
 								else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
 									spriteFIFO.push(sf::Color(88, 88, 88));
+									//spriteFIFO.push(sf::Color::Green);
 								else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
 									spriteFIFO.push(sf::Color(160, 160, 160));
+									//spriteFIFO.push(sf::Color::Blue);
 								else
 									spriteFIFO.push(sf::Color(16, 16, 16));
+									//spriteFIFO.push(sf::Color::Yellow);
 							}
 
 							if (!spriteBuffer.empty())
@@ -676,10 +680,12 @@ void PPU::tick(int cyclesRemaining)
 							sf::Color spritePixel = spriteFIFO.front();
 							spriteFIFO.pop();
 
+							if (!objEnable || spritePixel == sf::Color(232, 232, 232))
+								buffer.set_pixel(LX, LY, backgroundPixel);
+							else
+								buffer.set_pixel(LX, LY, spritePixel);
 							//if (spritePixel == sf::Color(232, 232, 232) || (objEnable && spritePixel != sf::Color(232, 232, 232)))
 							//	buffer.set_pixel(LX, LY, backgroundPixel);
-							//else
-							buffer.set_pixel(LX, LY, spritePixel);
 						}
 
 						LX++;
