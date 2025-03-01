@@ -467,6 +467,7 @@ void PPU::tick(int cyclesRemaining)
 	unsigned char LCDC = *(mmu.LCDC);
 	int spriteHeight = bitwise::check_bit(LCDC, 2) ? 16 : 8;
 	bool objEnable = bitwise::check_bit(LCDC, 1);
+	bool objPriority = bitwise::check_bit(LCDC, 0);
 
 	while (cyclesRemaining > 0)
 	{
@@ -516,7 +517,7 @@ void PPU::tick(int cyclesRemaining)
 					}
 				}
 
-				if (spriteFetch)	//Fetching sprite
+				if (spriteFetch && bgFetcherDone)	//Fetching sprite
 				{
 					//bgFetcherState = 0;
 
@@ -573,6 +574,8 @@ void PPU::tick(int cyclesRemaining)
 					switch (bgFetcherState)		//Fetching background
 					{
 						case 0:
+							bgFetcherDone = false;
+
 							if (!bitwise::check_bit(LCDC, 5))	//Background mode
 							{
 								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
@@ -655,12 +658,12 @@ void PPU::tick(int cyclesRemaining)
 								spriteFetchWaiting = false;
 							}
 
+							bgFetcherDone = true;
 							break;
 					};
 				}
-						
-
-				if (!backgroundFIFO.empty() && !spriteFetchWaiting && !spriteFetch)
+				
+				if (!backgroundFIFO.empty() && !spriteFetchWaiting && !spriteFetch && !pixelPushed)
 				{
 					sf::Color backgroundPixel = backgroundFIFO.front();
 					backgroundFIFO.pop();
@@ -672,7 +675,6 @@ void PPU::tick(int cyclesRemaining)
 
 					if (doneDiscarding)
 					{
-
 						if (spriteFIFO.empty())
 							buffer.set_pixel(LX, LY, backgroundPixel);
 						else
@@ -680,7 +682,7 @@ void PPU::tick(int cyclesRemaining)
 							sf::Color spritePixel = spriteFIFO.front();
 							spriteFIFO.pop();
 
-							if (!objEnable || spritePixel == sf::Color(232, 232, 232))
+							if (!objEnable || spritePixel == sf::Color(232, 232, 232) || (objPriority && spritePixel != sf::Color(232, 232, 232)))
 								buffer.set_pixel(LX, LY, backgroundPixel);
 							else
 								buffer.set_pixel(LX, LY, spritePixel);

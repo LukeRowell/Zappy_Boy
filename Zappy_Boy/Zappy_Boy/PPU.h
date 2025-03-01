@@ -76,6 +76,7 @@ class PPU
 
 		bool spriteFetch = false;
 		bool spriteFetchWaiting = false;
+		bool bgFetcherDone = false;
 		int spriteIndex = 9999999999;
 
 		bool doneDiscarding = false;
