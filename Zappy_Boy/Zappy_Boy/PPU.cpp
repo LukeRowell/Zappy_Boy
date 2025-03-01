@@ -466,6 +466,7 @@ void PPU::tick(int cyclesRemaining)
 	unsigned char LY = *(mmu.LY);
 	unsigned char LCDC = *(mmu.LCDC);
 	int spriteHeight = bitwise::check_bit(LCDC, 2) ? 16 : 8;
+	bool objEnable = bitwise::check_bit(LCDC, 1);
 
 	while (cyclesRemaining > 0)
 	{
@@ -501,161 +502,161 @@ void PPU::tick(int cyclesRemaining)
 				break;
 
 			case 1:		//Real mode 3, data transfer to LCD driver (174 - 289 dots)
-				if (cyclesRemaining >= 2)
+				if (!spriteFetchWaiting && !spriteFetch && objEnable)
 				{
 					for (int i = 0; i < spriteBuffer.size(); i++)
 					{
 						if (spriteBuffer[i].xPos <= LX + 8)
 						{
+							//spriteFetchWaiting = true;
 							spriteFetch = true;
 							spriteIndex = i;
 							break;
 						}
 					}
-
-					if (spriteFetch)	//Fetching sprite
-					{
-						bgFetcherState = 0;
-
-						switch (spriteFetcherState)
-						{
-							case 0:
-								tileID = spriteBuffer[spriteIndex].tileIndex;
-								spriteFetcherState++;
-								break;
-							case 1:
-								tileFetchAddr = 0x8000 + tileID;
-								lowerNibble = 2 * ((LY + SCY) % 8);
-								tileFetchAddr |= lowerNibble;
-
-								tileDataLow = mmu.read(tileFetchAddr);
-
-								spriteFetcherState++;
-								break;
-							case 2:
-								tileDataHigh = mmu.read(tileFetchAddr + 1);
-								spriteFetcherState++;
-								break;
-							case 3:
-								int curPixels = spriteFIFO.size();
-								//int pixelsOffScreen = 8 - spriteBuffer[spriteIndex].xPos;
-
-								for (int i = 7 - curPixels; i >= 0; i--)
-								{
-									if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-										spriteFIFO.push(sf::Color(232, 232, 232));
-									else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
-										spriteFIFO.push(sf::Color(88, 88, 88));
-									else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-										spriteFIFO.push(sf::Color(160, 160, 160));
-									else
-										spriteFIFO.push(sf::Color(16, 16, 16));
-								}
-
-								spriteBuffer.erase(spriteBuffer.begin() + spriteIndex);
-								spriteFetcherState = 0;
-								spriteFetch = false;
-								break;
-						}
-					}
-
-					else	//Fetching background
-					{
-						switch (bgFetcherState)
-						{
-							case 0:
-								if (!bitwise::check_bit(LCDC, 5))	//Background mode
-								{
-									tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
-
-									upperNibble = (LY + SCY) / 8;
-									lowerNibble = (LX + SCX) / 8;
-								}
-
-								else	//Window mode
-								{
-									tilemapAddr = !bitwise::check_bit(LCDC, 6) ? 0x9800 : 0x9C00;
-
-									upperNibble = WY / 8;
-									lowerNibble = LX / 8;
-								}
-
-								upperNibble = upperNibble << 5;
-
-								tilemapAddr += upperNibble;
-								tilemapAddr += lowerNibble;
-
-								if (tilemapAddr == prevAddr)
-									tilemapAddr++;
-
-
-								//std::cout << std::hex << std::setfill('0') << std::setw(4) << tilemapAddr << std::endl;
-
-								tileID = mmu.read(tilemapAddr);
-								signedTileID = mmu.read(tilemapAddr);
-
-								if (tilemapAddr == 0x9862 && tileID == 0xFD)
-									tilemapAddr = 0x9862;
-
-								tileID = tileID << 4;
-
-								test = signedTileID;
-
-								prevAddr = tilemapAddr;
-
-								bgFetcherState++;
-								break;
-							case 1:
-								if (bitwise::check_bit(LCDC, 4))
-									tileFetchAddr = 0x8000 + tileID;
-								else
-									tileFetchAddr = 0x9000 + (signedTileID * 16);
-
-								//tileFetchAddr |= tileID;
-
-								lowerNibble = !bitwise::check_bit(LCDC, 5) ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
-								tileFetchAddr |= lowerNibble;
-
-								if ((tileFetchAddr & 0x0001) != 0x0000)
-									tileFetchAddr = tileFetchAddr;
-
-
-								//TODO: Horizontal and vertical flip tile data here
-
-								tileDataLow = mmu.read(tileFetchAddr);
-
-								bgFetcherState++;
-								break;
-							case 2:
-								tileDataHigh = mmu.read(tileFetchAddr + 1);
-								bgFetcherState++;
-								break;
-							case 3:
-								if (backgroundFIFO.empty())
-								{
-									for (int i = 7; i >= 0; i--)
-									{
-										if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-											backgroundFIFO.push(sf::Color(232, 232, 232));
-										else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
-											backgroundFIFO.push(sf::Color(88, 88, 88));
-										else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-											backgroundFIFO.push(sf::Color(160, 160, 160));
-										else
-											backgroundFIFO.push(sf::Color(16, 16, 16));
-									}
-
-									bgFetcherState = 0;
-								}
-
-								break;
-						};
-					}
-					
-					cyclesRemaining -= 2;
 				}
 
-				if (!backgroundFIFO.empty() && !pixelPushed)
+				if (spriteFetch)	//Fetching sprite
+				{
+					bgFetcherState = 0;
+
+					switch (spriteFetcherState)
+					{
+						case 0:
+							tileID = spriteBuffer[spriteIndex].tileIndex;
+							spriteFetcherState++;
+							break;
+						case 1:
+							tileFetchAddr = 0x8000 + tileID;
+							lowerNibble = 2 * ((LY + SCY) % 8);
+							tileFetchAddr |= lowerNibble;
+
+							tileDataLow = mmu.read(tileFetchAddr);
+
+							spriteFetcherState++;
+							break;
+						case 2:
+							tileDataHigh = mmu.read(tileFetchAddr + 1);
+							spriteFetcherState++;
+							break;
+						case 3:
+							int curPixels = spriteFIFO.size();
+							//int pixelsOffScreen = 8 - spriteBuffer[spriteIndex].xPos;
+
+							for (int i = 7 - curPixels; i >= 0 && spriteFIFO.size() < 8; i--)
+							{
+								if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+									spriteFIFO.push(sf::Color(232, 232, 232));
+								else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
+									spriteFIFO.push(sf::Color(88, 88, 88));
+								else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+									spriteFIFO.push(sf::Color(160, 160, 160));
+								else
+									spriteFIFO.push(sf::Color(16, 16, 16));
+							}
+
+							if (!spriteBuffer.empty())
+								spriteBuffer.erase(spriteBuffer.begin() + spriteIndex);
+
+							spriteFetcherState = 0;
+							spriteFetch = false;
+							break;
+					}
+				}
+
+				if (!spriteFetch)
+				{
+					switch (bgFetcherState)		//Fetching background
+					{
+						case 0:
+							if (!bitwise::check_bit(LCDC, 5))	//Background mode
+							{
+								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
+
+								upperNibble = (LY + SCY) / 8;
+								lowerNibble = (LX + SCX) / 8;
+							}
+
+							else	//Window mode
+							{
+								tilemapAddr = !bitwise::check_bit(LCDC, 6) ? 0x9800 : 0x9C00;
+
+								upperNibble = WY / 8;
+								lowerNibble = LX / 8;
+							}
+
+							upperNibble = upperNibble << 5;
+
+							tilemapAddr += upperNibble;
+							tilemapAddr += lowerNibble;
+
+							if (tilemapAddr == prevAddr)
+								tilemapAddr++;
+
+							tileID = mmu.read(tilemapAddr);
+							signedTileID = mmu.read(tilemapAddr);
+
+							tileID = tileID << 4;
+
+							prevAddr = tilemapAddr;
+
+							bgFetcherState++;
+							break;
+						case 1:
+							if (bitwise::check_bit(LCDC, 4))
+								tileFetchAddr = 0x8000 + tileID;
+							else
+								tileFetchAddr = 0x9000 + (signedTileID * 16);
+
+							//tileFetchAddr |= tileID;
+
+							lowerNibble = !bitwise::check_bit(LCDC, 5) ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
+							tileFetchAddr |= lowerNibble;
+
+							if ((tileFetchAddr & 0x0001) != 0x0000)
+								tileFetchAddr = tileFetchAddr;
+
+
+							//TODO: Horizontal and vertical flip tile data here
+
+							tileDataLow = mmu.read(tileFetchAddr);
+
+							bgFetcherState++;
+							break;
+						case 2:
+							tileDataHigh = mmu.read(tileFetchAddr + 1);
+							bgFetcherState++;
+							break;
+						case 3:
+							if (backgroundFIFO.empty())
+							{
+								for (int i = 7; i >= 0; i--)
+								{
+									if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(232, 232, 232));
+									else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(88, 88, 88));
+									else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
+										backgroundFIFO.push(sf::Color(160, 160, 160));
+									else
+										backgroundFIFO.push(sf::Color(16, 16, 16));
+								}
+
+								bgFetcherState = 0;
+							}
+
+							if (spriteFetchWaiting)
+							{
+								spriteFetch = true;
+								spriteFetchWaiting = false;
+							}
+
+							break;
+					};
+				}
+						
+
+				if (!backgroundFIFO.empty() && !spriteFetchWaiting && !spriteFetch)
 				{
 					sf::Color backgroundPixel = backgroundFIFO.front();
 					backgroundFIFO.pop();
@@ -667,7 +668,6 @@ void PPU::tick(int cyclesRemaining)
 
 					if (doneDiscarding)
 					{
-						bool objEnable = bitwise::check_bit(LCDC, 1);
 
 						if (spriteFIFO.empty())
 							buffer.set_pixel(LX, LY, backgroundPixel);
@@ -679,7 +679,7 @@ void PPU::tick(int cyclesRemaining)
 							//if (spritePixel == sf::Color(232, 232, 232) || (objEnable && spritePixel != sf::Color(232, 232, 232)))
 							//	buffer.set_pixel(LX, LY, backgroundPixel);
 							//else
-								buffer.set_pixel(LX, LY, spritePixel);
+							buffer.set_pixel(LX, LY, spritePixel);
 						}
 
 						LX++;
@@ -694,10 +694,14 @@ void PPU::tick(int cyclesRemaining)
 					//std::cout << "----------------------------------------------" << std::endl;
 
 					std::queue<sf::Color>().swap(backgroundFIFO);
+					std::queue<sf::Color>().swap(spriteFIFO);
 					LX = 0;
 					bgFetcherState = 0;
+					spriteFetcherState = 0;
 					doneDiscarding = false;
 					newScanline = true;
+					spriteFetch = false;
+					spriteFetchWaiting = false;
 
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
 					PPU_Mode = 2;

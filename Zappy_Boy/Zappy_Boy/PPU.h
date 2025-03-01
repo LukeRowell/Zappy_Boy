@@ -75,7 +75,8 @@ class PPU
 		std::queue<sf::Color> spriteFIFO;
 
 		bool spriteFetch = false;
-		int spriteIndex = 0;
+		bool spriteFetchWaiting = false;
+		int spriteIndex = 9999999999;
 
 		bool doneDiscarding = false;
 		unsigned char totalDiscarded = 0;
