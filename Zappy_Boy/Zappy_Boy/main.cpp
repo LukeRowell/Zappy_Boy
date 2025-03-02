@@ -246,14 +246,14 @@ int main()
 
 
 	//------------------------------------------MISC------------------------------------------
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("dmg-acid2.gb");										//FAIL
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("dmg-acid2.gb");										//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("misc/ppu/vblank_stat_intr-C.gb");					//FAIL
 
 
 	//------------------------------------------ROMS------------------------------------------
 	//
 	//--------------ROM ONLY CARTS--------------
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Tetris.gb");										//99% functional, breaks when 2PLAYER is selected likely due to serial port not functioning yet
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("Dr._Mario.gb");										//Emulating TIMA interrupt causes this game to repeatedly flash at the title screen. May have something to do with the serial port/interrupt.
 	//
 	//--------------MBCX CARTS--------------

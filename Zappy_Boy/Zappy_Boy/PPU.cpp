@@ -13,143 +13,9 @@ PPU::~PPU()
 
 }
 
-
-//void PPU::setupDrawFunction(std::function<void(std::vector<sf::Color>&)> drawFunc)
 void PPU::setupDrawFunction(std::function<void(const Buffer &buffer)> drawFunc)
 {
 	draw = drawFunc;
-}
-
-Palette PPU::loadPalette()
-{
-	Palette currentPalette;
-	unsigned char color3bits = *(mmu.BGP) & 0xC0;
-	unsigned char color2bits = *(mmu.BGP) & 0x30;
-	unsigned char color1bits = *(mmu.BGP) & 0x0C;
-	unsigned char color0bits = *(mmu.BGP) & 0x03;
-
-	switch (color3bits)
-	{
-		case 0x00:
-			currentPalette.color3 = sf::Color::White;
-			break;
-
-		case 0x40:
-			currentPalette.color3 = sf::Color(170, 170, 170);		//light gray
-			break;
-
-		case 0x80:
-			currentPalette.color3 = sf::Color(85, 85, 85);		//dark gray
-			break;
-
-		case 0xC0:
-			currentPalette.color3 = sf::Color::Black;
-			break;
-
-		default:
-			break;
-	}
-
-	switch (color2bits)
-	{
-		case 0x00:
-			currentPalette.color2 = sf::Color::White;
-			break;
-
-		case 0x10:
-			currentPalette.color2 = sf::Color(170, 170, 170);		//light gray
-			break;
-
-		case 0x20:
-			currentPalette.color2 = sf::Color(85, 85, 85);		//dark gray
-			break;
-
-		case 0x30:
-			currentPalette.color2 = sf::Color::Black;
-			break;
-
-		default:
-			break;
-	}
-
-	switch (color1bits)
-	{
-		case 0x00:
-			currentPalette.color1 = sf::Color::White;
-			break;
-
-		case 0x04:
-			currentPalette.color1 = sf::Color(170, 170, 170);		//light gray
-			break;
-
-		case 0x08:
-			currentPalette.color1 = sf::Color(85, 85, 85);		//dark gray
-			break;
-
-		case 0x0C:
-			currentPalette.color1 = sf::Color::Black;
-			break;
-
-		default:
-			break;
-	}
-
-	switch (color0bits)
-	{
-		case 0x00:
-			currentPalette.color0 = sf::Color::White;		//White
-			break;
-
-		case 0x01:
-			currentPalette.color0 = sf::Color(170, 170, 170);		//light gray
-			break;
-
-		case 0x02:
-			currentPalette.color0 = sf::Color(85, 85, 85);		//dark gray
-			break;
-
-		case 0x03:
-			currentPalette.color0 = sf::Color::Black;		//Black
-			break;
-
-		default:
-			break;
-	}
-
-	return currentPalette;
-}
-
-Palette PPU::loadSpritePalette(bool use_palette_1)
-{
-	Palette spritePalette;
-
-	if (use_palette_1)
-	{
-		unsigned char color0 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP1), 1), bitwise::bit_value(*(mmu.OBP1), 0));
-		unsigned char color1 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP1), 3), bitwise::bit_value(*(mmu.OBP1), 2));
-		unsigned char color2 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP1), 5), bitwise::bit_value(*(mmu.OBP1), 4));
-		unsigned char color3 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP1), 7), bitwise::bit_value(*(mmu.OBP1), 6));
-
-		spritePalette.color0 = getActualColor(color0);
-		spritePalette.color1 = getActualColor(color1);
-		spritePalette.color2 = getActualColor(color2);
-		spritePalette.color3 = getActualColor(color3);
-	}
-
-	else
-	{
-		unsigned char color0 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP0), 1), bitwise::bit_value(*(mmu.OBP0), 0));
-		unsigned char color1 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP0), 3), bitwise::bit_value(*(mmu.OBP0), 2));
-		unsigned char color2 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP0), 5), bitwise::bit_value(*(mmu.OBP0), 4));
-		unsigned char color3 = bitwise::compose_bits(bitwise::bit_value(*(mmu.OBP0), 7), bitwise::bit_value(*(mmu.OBP0), 6));
-
-		spritePalette.color0 = getActualColor(color0);
-		spritePalette.color1 = getActualColor(color1);
-		spritePalette.color2 = getActualColor(color2);
-		spritePalette.color3 = getActualColor(color3);
-	}
-
-	return spritePalette;
 }
 
 int PPU::getMode()
@@ -157,304 +23,62 @@ int PPU::getMode()
 	return PPU_Mode;
 }
 
-sf::Color PPU::getActualColor(unsigned char colorValue)
+sf::Color PPU::getColor(bool highBit, bool lowBit)
 {
-	switch (colorValue)
+	if (!highBit && !lowBit)
+		return sf::Color(232, 232, 232);
+	if (!highBit && lowBit)
+		return sf::Color(160, 160, 160);
+	if (highBit && !lowBit)
+		return sf::Color(88, 88, 88);
+
+	return sf::Color(16, 16, 16);
+}
+
+//0 for OBP0, 1 for OBP1, 2 for BGP
+sf::Color PPU::getColorFromPalette(unsigned char pixel, int paletteSelection)
+{
+	sf::Color pixelColor;
+	unsigned char BGP = *(mmu.BGP);
+	unsigned char OBP0 = *(mmu.OBP0);
+	unsigned char OBP1 = *(mmu.OBP1);
+	int highBitIndex = 0;
+	int lowBitIndex = 0;
+
+	switch (pixel)
 	{
 		case 0:
-			//return sf::Color::Green;
-			return sf::Color::White;
+			highBitIndex = 1;
+			lowBitIndex = 0;
 			break;
-
 		case 1:
-			return sf::Color(170, 170, 170);
-			//return sf::Color::Red;
+			highBitIndex = 3;
+			lowBitIndex = 2;
 			break;
-
 		case 2:
-			return sf::Color(85, 85, 85);
-			//return sf::Color::Blue;
+			highBitIndex = 5;
+			lowBitIndex = 4;
 			break;
-
 		case 3:
-			//return sf::Color::Yellow;
-			return sf::Color::Black;
+			highBitIndex = 7;
+			lowBitIndex = 6;
 			break;
+	};
 
-		default:
-			break;
-	}
-}
-
-sf::Color PPU::getColor(unsigned char colorNum)
-{
-	switch (colorNum)
+	switch (paletteSelection)
 	{
-		case 0x00:
-			return palette.color0;
+		case 0:
+			pixelColor = getColor(bitwise::check_bit(OBP0, highBitIndex), bitwise::check_bit(OBP0, lowBitIndex));
 			break;
-
-		case 0x01:
-			return palette.color1;
+		case 1:
+			pixelColor = getColor(bitwise::check_bit(OBP1, highBitIndex), bitwise::check_bit(OBP1, lowBitIndex));
 			break;
-
-		case 0x02:
-			return palette.color2;
+		case 2:
+			pixelColor = getColor(bitwise::check_bit(BGP, highBitIndex), bitwise::check_bit(BGP, lowBitIndex));
 			break;
+	};
 
-		case 0x03:
-			return palette.color3;
-			break;
-
-		default:
-			//return sf::Color::Red;
-			break;
-	}
-}
-
-sf::Color PPU::get_color_from_palette(GBColor color, const Palette& palette)
-{
-	switch (color)
-	{
-		case GBColor::Color0:
-			return palette.color0;
-			break;
-
-		case GBColor::Color1:
-			return palette.color1;
-			break;
-
-		case GBColor::Color2:
-			return palette.color2;
-			break;
-
-		case GBColor::Color3:
-			return palette.color3;
-			break;
-
-		default:
-			break;
-	}
-}
-
-inline unsigned char PPU::getBit(const unsigned char byte, const unsigned char bitIndex)
-{
-	return (byte >> bitIndex) & 1;
-}
-
-unsigned char PPU::get_pixel(unsigned char byte1, unsigned char byte2, unsigned char bitIndex) const
-{
-	using bitwise::bit_value;
-
-	return static_cast<unsigned char>((bit_value(byte2, 7 - bitIndex) << 1) | bit_value(byte1, 7 - bitIndex));
-}
-
-void PPU::drawBackground()
-{
-	LCDEnabled = *(mmu.LCDC) & 0x80;
-
-	if (!LCDEnabled)		//If the LCD is off we cannot draw to the screen
-	{
-		return;
-	}
-
-	windowTileSelect = *(mmu.LCDC) & 0x40;
-	windowDisplayEnabled = *(mmu.LCDC) & 0x20;
-	largeSpriteSize = *(mmu.LCDC) & 0x04;
-	spritesEnabled = *(mmu.LCDC) & 0x02;
-	backgroundDisplayEnabled = *(mmu.LCDC) & 0x01;
-
-	if (backgroundDisplayEnabled)
-	{
-		backgroundAndWindowTileSelect = *(mmu.LCDC) & 0x10;
-		backgroundTileSelect = *(mmu.LCDC) & 0x08;
-		backgroundTileSelect ? map_start_addr = 0x9C00 : map_start_addr = 0x9800;
-		backgroundAndWindowTileSelect ? tile_start_addr = 0x8000 : tile_start_addr = 0x8800;
-		palette = loadPalette();
-		scx = *(mmu.SCX);
-		scy = *(mmu.SCY);
-		current_line = line;
-
-		for (unsigned int x = 0; x < SCREEN_WIDTH; x++)
-		{
-			x_in_bg_map = (scx + x) % BACKGROUND_SIZE;
-			y_in_bg_map = (scy + current_line) % BACKGROUND_SIZE;
-
-			tile_x = x_in_bg_map / TILE_WIDTH_PX;
-			tile_y = y_in_bg_map / TILE_HEIGHT_PX;
-
-			x_in_tile = x_in_bg_map % TILE_WIDTH_PX;
-			y_in_tile = y_in_bg_map % TILE_HEIGHT_PX;
-
-			tile_index = (tile_y * TILES_PER_LINE) + tile_x;
-
-			tile_id_address = map_start_addr + tile_index;
-
-			tile_id = mmu.read(tile_id_address);
-
-			//backgroundTileSelect ? tile_offset = tile_id * TILE_BYTES : tile_offset = ((signed char)tile_id + 128) * TILE_BYTES;
-			//backgroundTileSelect ? tile_offset = ((signed char)tile_id + 128) * TILE_BYTES : tile_offset = tile_id * TILE_BYTES;
-
-			backgroundAndWindowTileSelect ? tile_offset = tile_id * TILE_BYTES : tile_offset = ((signed char)tile_id + 128) * TILE_BYTES;
-			//backgroundAndWindowTileSelect ? tile_offset = ((signed char)tile_id + 128) * TILE_BYTES : tile_offset = tile_id * TILE_BYTES;
-
-			index_into_tile = y_in_tile * 2;
-
-			tile_start = tile_start_addr + tile_offset;
-			tile_line_start = tile_start_addr + tile_offset + index_into_tile;
-
-			firstPixels = mmu.read(tile_line_start);
-			secondPixels = mmu.read(tile_line_start + 1);
-
-			colorForPixel = getColor(get_pixel(firstPixels, secondPixels, x_in_tile));
-			//colorForPixel = sf::Color::Red;
-
-			buffer.set_pixel(x, current_line, colorForPixel);
-			//pixels[(current_line * SCREEN_WIDTH) + x] = colorForPixel;
-		}
-	}
-}
-
-void PPU::drawWindow()
-{
-	LCDEnabled = *(mmu.LCDC) & 0x80;
-	windowTileSelect = *(mmu.LCDC) & 0x40;
-	windowDisplayEnabled = *(mmu.LCDC) & 0x20;
-	backgroundAndWindowTileSelect = *(mmu.LCDC) & 0x10;
-	backgroundTileSelect = *(mmu.LCDC) & 0x08;
-
-	if (!LCDEnabled)		//If the LCD is off we cannot draw to the screen
-	{
-		return;
-	}
-
-	if (windowDisplayEnabled)
-	{
-		windowTileSelect ? map_start_addr = 0x9C00 : map_start_addr = 0x9800;
-		backgroundAndWindowTileSelect ? tile_start_addr = 0x8000 : tile_start_addr = 0x8800;
-		palette = loadPalette();
-		wx = *(mmu.WX);
-		wy = *(mmu.WY);
-		current_line = line;
-
-		unsigned int y_in_screen = current_line - wy;
-
-		if (y_in_screen > SCREEN_HEIGHT)
-		{
-			return;
-		}
-
-		for (unsigned int x = 0; x < SCREEN_WIDTH; x++)
-		{
-			unsigned int x_in_screen = wx + x - 7;
-
-			tile_x = x_in_screen / TILE_WIDTH_PX;
-			tile_y = y_in_screen / TILE_HEIGHT_PX;
-
-			x_in_tile = x_in_screen % TILE_WIDTH_PX;
-			y_in_tile = y_in_screen % TILE_HEIGHT_PX;
-
-			tile_index = tile_y * TILES_PER_LINE + tile_x;
-
-			tile_id_address = map_start_addr + tile_index;
-
-			tile_id = mmu.read(tile_id_address);
-
-			backgroundAndWindowTileSelect ? tile_offset = tile_id * TILE_BYTES : tile_offset = ((signed char)tile_id + 128) * TILE_BYTES;
-
-			index_into_tile = y_in_tile * 2;
-
-			tile_start = tile_start_addr + tile_offset;
-			tile_line_start = tile_start_addr + tile_offset + index_into_tile;
-
-			firstPixels = mmu.read(tile_line_start);
-			secondPixels = mmu.read(tile_line_start + 1);
-
-			colorForPixel = getColor(get_pixel(firstPixels, secondPixels, x_in_tile));
-
-			buffer.set_pixel(x, current_line, colorForPixel);
-		}
-	}
-}
-
-void PPU::drawSprites()
-{
-	Palette spritePalette;
-
-	for (int i = 0; i < 40; i++)		//40 total sprites
-	{
-		offset_in_oam = i * SPRITE_BYTES;
-		oam_start = 0xFE00 + offset_in_oam;
-
-		unsigned char sprite_y = mmu.read(oam_start);
-		unsigned char sprite_x = mmu.read(oam_start + 1);
-
-		if (sprite_y == 0 || sprite_y >= 160)
-		{
-			continue;
-		}
-
-		if (sprite_x == 0 || sprite_x >= 168)
-		{
-			continue;
-		}
-
-		//unsigned int sprite_size_multiplier = sprite_size() ? 2 : 1;
-
-		unsigned short tile_set_location = 0x8000;
-
-		unsigned char pattern_i = mmu.read(oam_start + 2);
-		unsigned char sprite_attrs = mmu.read(oam_start + 3);
-
-		bool use_palette_1 = bitwise::check_bit(sprite_attrs, 4);
-		bool flip_x = bitwise::check_bit(sprite_attrs, 5);
-		bool flip_y = bitwise::check_bit(sprite_attrs, 6);
-		bool obj_behind_bg = bitwise::check_bit(sprite_attrs, 7);
-
-		spritePalette = loadSpritePalette(use_palette_1);
-
-		unsigned short tile_offset = pattern_i * TILE_BYTES;
-
-		unsigned short pattern_address = tile_set_location + tile_offset;
-
-		Tile tile(pattern_address, mmu, 1);
-
-		int start_y = sprite_y - 16;
-		int start_x = sprite_x - 8;
-
-		for (unsigned int y = 0; y < TILE_HEIGHT_PX; y++)
-		{
-			for (unsigned int x = 0; x < TILE_WIDTH_PX; x++)
-			{
-				unsigned int maybe_flipped_y = !flip_y ? y : (TILE_HEIGHT_PX * 1) - y - 1;
-				unsigned int maybe_flipped_x = !flip_x ? x : TILE_WIDTH_PX - x - 1;
-
-				GBColor gb_color = tile.get_pixel(maybe_flipped_x, maybe_flipped_y);
-
-				if (gb_color == GBColor::Color0)
-				{
-					continue;
-				}
-
-				sf::Color screen_color = get_color_from_palette(gb_color, spritePalette);
-
-				int pixel_x = start_x + x;
-				int pixel_y = start_y + y;
-
-				if (pixel_x < 0 || pixel_x > SCREEN_WIDTH)
-				{
-					continue;
-				}
-
-				if (pixel_y < 0 || pixel_y > SCREEN_HEIGHT)
-				{
-					continue;
-				}
-
-				buffer.set_pixel(pixel_x, pixel_y, screen_color);
-			}
-		}
-	}
+	return pixelColor;
 }
 
 void PPU::tick(int cyclesRemaining)
@@ -467,7 +91,7 @@ void PPU::tick(int cyclesRemaining)
 	unsigned char LCDC = *(mmu.LCDC);
 	int spriteHeight = bitwise::check_bit(LCDC, 2) ? 16 : 8;
 	bool objEnable = bitwise::check_bit(LCDC, 1);
-	bool objPriority = bitwise::check_bit(LCDC, 0);
+	bool bgEnable = bitwise::check_bit(LCDC, 0);
 
 	while (cyclesRemaining > 0)
 	{
@@ -497,67 +121,63 @@ void PPU::tick(int cyclesRemaining)
 
 					PPU_Mode = 1;
 					oamIndex = 0;
+
+					savedSprites = spriteBuffer;
 				}
 
 				cyclesRemaining--;
 				break;
 
 			case 1:		//Real mode 3, data transfer to LCD driver (174 - 289 dots)
-				if (!spriteFetchWaiting && !spriteFetch && objEnable)
+				if (!spriteFetch && !spriteFetchWaiting && objEnable)
 				{
 					for (int i = 0; i < spriteBuffer.size(); i++)
 					{
 						if (spriteBuffer[i].xPos <= LX + 8)
 						{
-							//spriteFetchWaiting = true;
-							spriteFetch = true;
+							bgFetcherState == 3 ? spriteFetch = true : spriteFetchWaiting = true;
 							spriteIndex = i;
 							break;
 						}
 					}
 				}
 
-				if (spriteFetch && bgFetcherDone)	//Fetching sprite
+				if (spriteFetch)	//Fetching sprite
 				{
-					//bgFetcherState = 0;
-
 					switch (spriteFetcherState)
 					{
 						case 0:
-							tileID = spriteBuffer[spriteIndex].tileIndex;
+							spriteFetchWaiting = false;
+							objTileID = spriteBuffer[spriteIndex].tileIndex;
 							spriteFetcherState++;
 							break;
 						case 1:
-							tileFetchAddr = 0x8000 + tileID;
-							lowerNibble = 2 * ((LY + SCY) % 8);
-							tileFetchAddr |= lowerNibble;
+							objTileFetchAddr = 0x8000 + objTileID;
+							objLowerNibble = 2 * ((LY + SCY) % 8);
+							objTileFetchAddr |= objLowerNibble;
 
-							tileDataLow = mmu.read(tileFetchAddr);
+							objTileDataLow = mmu.read(objTileFetchAddr);
 
 							spriteFetcherState++;
 							break;
 						case 2:
-							tileDataHigh = mmu.read(tileFetchAddr + 1);
+							objTileDataHigh = mmu.read(objTileFetchAddr + 1);
 							spriteFetcherState++;
 							break;
 						case 3:
 							int curPixels = spriteFIFO.size();
 							//int pixelsOffScreen = 8 - spriteBuffer[spriteIndex].xPos;
 
-							for (int i = 7 - curPixels; i >= 0 && spriteFIFO.size() < 8; i--)
+							for (int i = 7 - curPixels; i >= 0; i--)
 							{
-								if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-									spriteFIFO.push(sf::Color(232, 232, 232));
-									//spriteFIFO.push(sf::Color(255, 0, 0));
-								else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
-									spriteFIFO.push(sf::Color(88, 88, 88));
-									//spriteFIFO.push(sf::Color::Green);
-								else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-									spriteFIFO.push(sf::Color(160, 160, 160));
-									//spriteFIFO.push(sf::Color::Blue);
+								if (!bitwise::check_bit(objTileDataLow, i) && !bitwise::check_bit(objTileDataHigh, i))
+									spriteFIFO.push(0x00);
+								else if (!bitwise::check_bit(objTileDataLow, i) && bitwise::check_bit(objTileDataHigh, i))
+									spriteFIFO.push(0x02);
+								else if (bitwise::check_bit(objTileDataLow, i) && !bitwise::check_bit(objTileDataHigh, i))
+									spriteFIFO.push(0x01);
 								else
-									spriteFIFO.push(sf::Color(16, 16, 16));
-									//spriteFIFO.push(sf::Color::Yellow);
+									spriteFIFO.push(0x03);
 							}
 
 							if (!spriteBuffer.empty())
@@ -574,8 +194,6 @@ void PPU::tick(int cyclesRemaining)
 					switch (bgFetcherState)		//Fetching background
 					{
 						case 0:
-							bgFetcherDone = false;
-
 							if (!bitwise::check_bit(LCDC, 5))	//Background mode
 							{
 								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
@@ -620,10 +238,6 @@ void PPU::tick(int cyclesRemaining)
 							lowerNibble = !bitwise::check_bit(LCDC, 5) ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
 							tileFetchAddr |= lowerNibble;
 
-							if ((tileFetchAddr & 0x0001) != 0x0000)
-								tileFetchAddr = tileFetchAddr;
-
-
 							//TODO: Horizontal and vertical flip tile data here
 
 							tileDataLow = mmu.read(tileFetchAddr);
@@ -632,6 +246,13 @@ void PPU::tick(int cyclesRemaining)
 							break;
 						case 2:
 							tileDataHigh = mmu.read(tileFetchAddr + 1);
+
+							if (spriteFetchWaiting)
+							{
+								spriteFetch = true;
+								spriteFetchWaiting = false;
+							}
+
 							bgFetcherState++;
 							break;
 						case 3:
@@ -640,32 +261,25 @@ void PPU::tick(int cyclesRemaining)
 								for (int i = 7; i >= 0; i--)
 								{
 									if (!bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-										backgroundFIFO.push(sf::Color(232, 232, 232));
+										backgroundFIFO.push(0x00);
 									else if (!bitwise::check_bit(tileDataLow, i) && bitwise::check_bit(tileDataHigh, i))
-										backgroundFIFO.push(sf::Color(88, 88, 88));
+										backgroundFIFO.push(0x02);
 									else if (bitwise::check_bit(tileDataLow, i) && !bitwise::check_bit(tileDataHigh, i))
-										backgroundFIFO.push(sf::Color(160, 160, 160));
+										backgroundFIFO.push(0x01);
 									else
-										backgroundFIFO.push(sf::Color(16, 16, 16));
+										backgroundFIFO.push(0x03);
 								}
 
 								bgFetcherState = 0;
 							}
-
-							if (spriteFetchWaiting)
-							{
-								spriteFetch = true;
-								spriteFetchWaiting = false;
-							}
-
-							bgFetcherDone = true;
 							break;
 					};
 				}
 				
 				if (!backgroundFIFO.empty() && !spriteFetchWaiting && !spriteFetch && !pixelPushed)
 				{
-					sf::Color backgroundPixel = backgroundFIFO.front();
+					//sf::Color backgroundPixel = backgroundFIFO.front();
+					unsigned char backgroundPixel = backgroundFIFO.front();
 					backgroundFIFO.pop();
 
 					totalDiscarded++;
@@ -676,18 +290,20 @@ void PPU::tick(int cyclesRemaining)
 					if (doneDiscarding)
 					{
 						if (spriteFIFO.empty())
-							buffer.set_pixel(LX, LY, backgroundPixel);
+							buffer.set_pixel(LX, LY, getColorFromPalette(backgroundPixel, 2));
 						else
 						{
-							sf::Color spritePixel = spriteFIFO.front();
+							unsigned char spritePixel = spriteFIFO.front();
 							spriteFIFO.pop();
 
-							if (!objEnable || spritePixel == sf::Color(232, 232, 232) || (objPriority && spritePixel != sf::Color(232, 232, 232)))
-								buffer.set_pixel(LX, LY, backgroundPixel);
+							bool priorityBit = bitwise::check_bit(savedSprites[spriteIndex].attributeFlags, 7);
+							
+							if (!bgEnable)
+								buffer.set_pixel(LX, LY, getColorFromPalette(spritePixel, bitwise::check_bit(savedSprites[spriteIndex].attributeFlags, 4)));
+							else if (!objEnable || spritePixel == 0x00 || (priorityBit && (backgroundPixel != 0x00)))
+								buffer.set_pixel(LX, LY, getColorFromPalette(backgroundPixel, 2));
 							else
-								buffer.set_pixel(LX, LY, spritePixel);
-							//if (spritePixel == sf::Color(232, 232, 232) || (objEnable && spritePixel != sf::Color(232, 232, 232)))
-							//	buffer.set_pixel(LX, LY, backgroundPixel);
+								buffer.set_pixel(LX, LY, getColorFromPalette(spritePixel, bitwise::check_bit(savedSprites[spriteIndex].attributeFlags, 4)));
 						}
 
 						LX++;
@@ -699,10 +315,10 @@ void PPU::tick(int cyclesRemaining)
 
 				if (LX == 160)
 				{
-					//std::cout << "----------------------------------------------" << std::endl;
-
-					std::queue<sf::Color>().swap(backgroundFIFO);
-					std::queue<sf::Color>().swap(spriteFIFO);
+					std::queue<unsigned char>().swap(backgroundFIFO);
+					std::queue<unsigned char>().swap(spriteFIFO);
+					spriteBuffer.clear();
+					savedSprites.clear();
 					LX = 0;
 					bgFetcherState = 0;
 					spriteFetcherState = 0;
@@ -737,6 +353,7 @@ void PPU::tick(int cyclesRemaining)
 					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 				}
 
+				pixelPushed = false;
 				cyclesRemaining--;
 				break;
 
@@ -783,7 +400,6 @@ void PPU::tick(int cyclesRemaining)
 					{
 						if (cpu.getRefreshClocksElapsed() >= 70224)
 						{
-							//drawSprites();
 							draw(buffer);		
 							cpu.setRefreshClocksElapsed(cpu.getRefreshClocksElapsed() - 70224);
 						}
@@ -803,19 +419,5 @@ void PPU::tick(int cyclesRemaining)
 			default:		//Invalid PPU mode
 				break;
 		}
-
 	}
-
-	pixelPushed = false;
-}
-
-sf::Color PPU::callGetPixel(unsigned int x, unsigned int y) const
-{
-	return getPixel(x, y);
-}
-
-inline sf::Color PPU::getPixel(unsigned int x, unsigned int y) const
-{
-	//return pixels[(SCREEN_WIDTH * y) + x];
-	return sf::Color::Black;
 }

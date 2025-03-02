@@ -702,7 +702,7 @@ void CPU::updateTimer(int cyclesElapsed)
 	if (mmu.TIMAOverflow)
 	{
 		mmu.writeMemory(0xFF05, mmu.readMemory(0xFF06));
-		mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
+		//mmu.writeMemory(0xFF0F, mmu.readMemory(0xFF0F) | 0x04);
 		mmu.TIMAOverflow = false;
 	}
 

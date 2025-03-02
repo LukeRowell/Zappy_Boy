@@ -43,7 +43,9 @@ class PPU
 
 		sf::Color getActualColor(unsigned char colorValue);
 
-		sf::Color getColor(unsigned char colorNum);
+		//sf::Color getColor(unsigned char colorNum);
+
+		sf::Color getColor(bool highBit, bool lowBit);
 
 		sf::Color get_color_from_palette(GBColor gb_color, const Palette& palette);
 
@@ -65,14 +67,19 @@ class PPU
 
 		int getCycleCount() { return cycleCount; }
 
+		sf::Color getColorFromPalette(unsigned char pixel, int paletteSelection);
+
 		void drawWin();
 
 		void drawObjects();
 
 	private:
 
-		std::queue<sf::Color> backgroundFIFO;
-		std::queue<sf::Color> spriteFIFO;
+		//std::queue<sf::Color> backgroundFIFO;
+		//std::queue<sf::Color> spriteFIFO;
+
+		std::queue<unsigned char> backgroundFIFO;
+		std::queue<unsigned char> spriteFIFO;
 
 		bool spriteFetch = false;
 		bool spriteFetchWaiting = false;
@@ -95,6 +102,15 @@ class PPU
 
 		Sprite curSprite;
 		std::vector<Sprite> spriteBuffer;
+		std::vector<Sprite> savedSprites;
+
+		unsigned short objTileID;
+		unsigned short objTilemapAddr;
+		unsigned short objTileFetchAddr;
+		unsigned short objUpperNibble;
+		unsigned char objLowerNibble;
+		unsigned char objTileDataLow;
+		unsigned char objTileDataHigh;
 
 		unsigned short tileID;
 		signed char signedTileID;
