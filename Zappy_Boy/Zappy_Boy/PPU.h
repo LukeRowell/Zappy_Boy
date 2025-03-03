@@ -73,10 +73,12 @@ class PPU
 
 		void drawObjects();
 
+		bool LYEqualLYC = false;
+
 	private:
 
-		//std::queue<sf::Color> backgroundFIFO;
-		//std::queue<sf::Color> spriteFIFO;
+		bool windowMode = false;
+		bool LYWY = false;
 
 		std::queue<unsigned char> backgroundFIFO;
 		std::queue<unsigned char> spriteFIFO;

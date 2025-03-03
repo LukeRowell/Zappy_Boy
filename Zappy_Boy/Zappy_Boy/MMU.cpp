@@ -370,13 +370,14 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF44:		//LY, writing to this register resets it to 0x00
-			write(0xFF44, 0x00);
-			ppu.line = 0x00;
+			//write(0xFF44, 0x00);
+			//ppu.line = 0x00;
 			//write(0xFF44, value);
 			break;
 
 		case 0xFF45:		//LYC
 			write(0xFF45, value);
+			ppu.LYEqualLYC = (value == *LY);
 			break;
 
 		case 0xFF46:		//Write to DMA register, triggers DMA transfer
@@ -472,7 +473,7 @@ bool MMU::getDIV_WRITE()
 	return DIV_WRITE;
 }
 
-unsigned char MMU::read(unsigned short address)		//Return the value from memory located at specified address
+unsigned char MMU::read(unsigned short address) const		//Return the value from memory located at specified address
 {
 	return memory[address];
 }

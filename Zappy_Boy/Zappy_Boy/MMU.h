@@ -75,7 +75,7 @@ class MMU
 		unsigned char* WX;
 		unsigned char* IE;
 
-		unsigned char read(unsigned short address);
+		unsigned char read(unsigned short address) const;
 		void write(unsigned short address, unsigned char value);
 
 		const static int MEM_SIZE = 65536;

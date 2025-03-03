@@ -194,7 +194,7 @@ void PPU::tick(int cyclesRemaining)
 					switch (bgFetcherState)		//Fetching background
 					{
 						case 0:
-							if (!bitwise::check_bit(LCDC, 5))	//Background mode
+							if (!windowMode)	//Background mode
 							{
 								tilemapAddr = !bitwise::check_bit(LCDC, 3) ? 0x9800 : 0x9C00;
 
@@ -207,7 +207,7 @@ void PPU::tick(int cyclesRemaining)
 								tilemapAddr = !bitwise::check_bit(LCDC, 6) ? 0x9800 : 0x9C00;
 
 								upperNibble = WY / 8;
-								lowerNibble = LX / 8;
+								lowerNibble = WX / 8;
 							}
 
 							upperNibble = upperNibble << 5;
@@ -235,7 +235,7 @@ void PPU::tick(int cyclesRemaining)
 
 							//tileFetchAddr |= tileID;
 
-							lowerNibble = !bitwise::check_bit(LCDC, 5) ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
+							lowerNibble = !windowMode ? 2 * ((LY + SCY) % 8) : 2 * (WY % 8);
 							tileFetchAddr |= lowerNibble;
 
 							//TODO: Horizontal and vertical flip tile data here
@@ -308,6 +308,17 @@ void PPU::tick(int cyclesRemaining)
 
 						LX++;
 						pixelPushed = true;
+
+						if (bitwise::check_bit(LCDC, 5) && LYWY && (LX >= WX - 7))
+						{
+							windowMode = true;
+							LX = 0;
+							std::queue<unsigned char>().swap(backgroundFIFO);
+							bgFetcherState = 0;
+						}
+
+						else
+							windowMode = false;
 					}
 				}
 
@@ -337,18 +348,17 @@ void PPU::tick(int cyclesRemaining)
 						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 					}
 
-					bool lyc_interrupt = bitwise::check_bit(*(mmu.STAT), 6);
-					bool lyc = (*(mmu.LYC) == line);
+					bool LYEqualLYCEnable = bitwise::check_bit(*(mmu.STAT), 6);
+					
+					if (LYEqualLYC)
+						mmu.write(0xFF41, mmu.read(0xFF0F) | 0x02);
 
-					if (lyc)
-						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
-
-					if (lyc_interrupt && lyc)
+					if (LYEqualLYC && LYEqualLYCEnable)
 					{
 						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 					}
 
-					lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
+					//lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
 
 					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 				}
@@ -410,6 +420,8 @@ void PPU::tick(int cyclesRemaining)
 						PPU_Mode = 0;
 						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+
+						LYWY = false;
 					}
 				}
 
@@ -419,5 +431,8 @@ void PPU::tick(int cyclesRemaining)
 			default:		//Invalid PPU mode
 				break;
 		}
+
+		if (LY == WY)
+			LYWY = true;
 	}
 }
