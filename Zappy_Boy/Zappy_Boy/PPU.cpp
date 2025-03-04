@@ -83,18 +83,34 @@ sf::Color PPU::getColorFromPalette(unsigned char pixel, int paletteSelection)
 
 void PPU::tick(int cyclesRemaining)
 {
+	unsigned char LCDC = *(mmu.LCDC);
+
+	if (!bitwise::check_bit(LCDC, 7))
+		return;
+
 	unsigned char SCX = *(mmu.SCX);
 	unsigned char SCY = *(mmu.SCY);
 	unsigned char WX = *(mmu.WX);
 	unsigned char WY = *(mmu.WY);
 	unsigned char LY = *(mmu.LY);
-	unsigned char LCDC = *(mmu.LCDC);
+	unsigned char LYC = *(mmu.LYC);
 	int spriteHeight = bitwise::check_bit(LCDC, 2) ? 16 : 8;
 	bool objEnable = bitwise::check_bit(LCDC, 1);
 	bool bgEnable = bitwise::check_bit(LCDC, 0);
+	bool requestSTAT = false;
 
 	while (cyclesRemaining > 0)
 	{
+		unsigned char STAT = *(mmu.STAT);
+		unsigned char realPPUMode = (PPU_Mode + 2) % 4;
+		unsigned char prevSTATSources = (realPPUMode == 0 && bitwise::check_bit(STAT, 3)) ||
+			(realPPUMode == 1 && bitwise::check_bit(STAT, 4)) ||
+			(realPPUMode == 2 && bitwise::check_bit(STAT, 5)) ||
+			(LYEqualLYC && bitwise::check_bit(STAT, 6));
+
+		LYEqualLYC = (LY == LYC);
+		requestSTAT = LYEqualLYC;
+
 		if (newScanline)
 			discardCount = SCX % 8;
 
@@ -341,26 +357,19 @@ void PPU::tick(int cyclesRemaining)
 					cycleCount = cycleCount % CLOCKS_PER_SCANLINE_VRAM;
 					PPU_Mode = 2;
 					
-					bool hblank_interrupt = bitwise::check_bit(*(mmu.STAT), 3);
-
-					if (hblank_interrupt)
-					{
-						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
-					}
-
 					bool LYEqualLYCEnable = bitwise::check_bit(*(mmu.STAT), 6);
 					
 					if (LYEqualLYC)
 						mmu.write(0xFF41, mmu.read(0xFF0F) | 0x02);
-
 					if (LYEqualLYC && LYEqualLYCEnable)
-					{
-						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
-					}
-
-					//lyc ? mmu.write(0xFF41, mmu.read(0xFF41) | 0x04) : mmu.write(0xFF41, mmu.read(0xFF41) & 0xFB);
-
+						requestSTAT = true;
+						//mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
+					
 					mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
+
+					if (bitwise::check_bit(*(mmu.STAT), 3))
+						requestSTAT = true;
+						//mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 				}
 
 				pixelPushed = false;
@@ -378,13 +387,16 @@ void PPU::tick(int cyclesRemaining)
 					cycleCount = cycleCount % CLOCKS_PER_HBLANK;
 
 					if (line == 144)
-						//if(*(mmu.LY))
 					{
 						PPU_Mode = 3;
 						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x01);
 
 						mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x01);
+
+						if (bitwise::check_bit(*(mmu.STAT), 4))
+							requestSTAT = true;
+							//mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 					}
 
 					else
@@ -392,6 +404,10 @@ void PPU::tick(int cyclesRemaining)
 						PPU_Mode = 0;
 						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFC);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
+
+						if (bitwise::check_bit(*(mmu.STAT), 5))
+							requestSTAT = true;
+							//mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 					}
 				}
 
@@ -421,6 +437,9 @@ void PPU::tick(int cyclesRemaining)
 						mmu.write(0xFF41, mmu.read(0xFF41) & 0xFE);
 						mmu.write(0xFF41, mmu.read(0xFF41) | 0x02);
 
+						if (bitwise::check_bit(*(mmu.STAT), 5))
+							requestSTAT = true;
+
 						LYWY = false;
 					}
 				}
@@ -434,5 +453,8 @@ void PPU::tick(int cyclesRemaining)
 
 		if (LY == WY)
 			LYWY = true;
+
+		if (prevSTATSources == 0x00 && requestSTAT)
+			mmu.write(0xFF0F, mmu.read(0xFF0F) | 0x02);
 	}
 }

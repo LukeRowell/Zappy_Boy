@@ -62,7 +62,7 @@ static void setPixels(const Buffer &buffer)
 	}
 }
 
-void eventHandler()
+static void eventHandler()
 {
 	sf::Event event;
 
@@ -213,7 +213,7 @@ int main()
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/lcdon_timing-dmgABCmgbS.gb");		//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/lcdon_write_timing-GS.gb");			//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/stat_irq_blocking.gb");				//FAIL
-	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/stat_lyc_onoff.gb");				//FAIL
+	std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/stat_lyc_onoff.gb");				//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("acceptance2/ppu/vblank_stat_intr-GS.gb");			//FAIL (completely frozen, no screen display)
 	//
 	//-------------SERIAL-------------- 
@@ -246,7 +246,7 @@ int main()
 
 
 	//------------------------------------------MISC------------------------------------------
-	std::vector<unsigned char> cartridgeData = loadCartridgeData("dmg-acid2.gb");										//FAIL
+	//std::vector<unsigned char> cartridgeData = loadCartridgeData("dmg-acid2.gb");										//FAIL
 	//std::vector<unsigned char> cartridgeData = loadCartridgeData("misc/ppu/vblank_stat_intr-C.gb");					//FAIL
 
 

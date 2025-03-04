@@ -35,29 +35,9 @@ class PPU
 		//void setupDrawFunction(std::function<void(std::vector<sf::Color>&)> drawFunc);
 		void setupDrawFunction(std::function<void(const Buffer &buffer)> drawFunc);
 
-		Palette loadPalette();
-
-		Palette loadSpritePalette(bool use_palette_1);
-
 		int getMode();
 
-		sf::Color getActualColor(unsigned char colorValue);
-
-		//sf::Color getColor(unsigned char colorNum);
-
 		sf::Color getColor(bool highBit, bool lowBit);
-
-		sf::Color get_color_from_palette(GBColor gb_color, const Palette& palette);
-
-		inline unsigned char getBit(const unsigned char byte, const unsigned char bitIndex);
-
-		unsigned char get_pixel(unsigned char byte1, unsigned char byte2, unsigned char bitIndex) const;
-
-		void drawBackground();
-
-		void drawWindow();
-
-		void drawSprites();
 
 		void tick(int cyclesElapsed);
 		unsigned char line = 0x00;
@@ -68,10 +48,6 @@ class PPU
 		int getCycleCount() { return cycleCount; }
 
 		sf::Color getColorFromPalette(unsigned char pixel, int paletteSelection);
-
-		void drawWin();
-
-		void drawObjects();
 
 		bool LYEqualLYC = false;
 

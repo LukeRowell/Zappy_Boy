@@ -809,12 +809,12 @@ int CPU::tick()
 
 	interruptHandler();
 
-	/*
-	ss << std::hex << std::setfill('0') << std::setw(4) << PC;
-	debugStrings.push_back("PC:" + ss.str() + " (cy: " + std::to_string(refreshClocksElapsed) + ")\n");
-	ss.str("");
-	ss.clear();
-	*/
+	
+	//std::cout << std::hex << std::setfill('0') << std::setw(4) << PC << '\n';
+	//debugStrings.push_back("PC:" + ss.str() + " (cy: " + std::to_string(refreshClocksElapsed) + ")\n");
+	//ss.str("");
+	//ss.clear();
+	
 
 	opcode = mmu.readMemory(PC);
 	CB_opcode = mmu.readMemory(PC + 1);
@@ -839,7 +839,7 @@ int CPU::tick()
 	//For checking button polling in Tetris
 	//unsigned short testPC = 0x29A6;
 
-	unsigned short testPC = 0x0183;
+	unsigned short testPC = 0x0155;
 	unsigned short testPC2 = 0x0000;
 
 	if (PC == testPC || PC == testPC2)
@@ -3864,6 +3864,9 @@ int CPU::tick()
 
 	DIV += clocksElapsed * 4;
 	mmu.memory[0xFF04] = DIV >> 8;
+
+	if (mmu.memory[0xFF0F] == 0xE1)
+		PC = PC;
 
 	return clocksElapsed;
 }

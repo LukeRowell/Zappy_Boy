@@ -18,7 +18,7 @@ MMU::MMU(CPU &zbCPU, PPU &zbPPU, Cartridge &zbCartridge) : cpu(zbCPU), ppu(zbPPU
 	memory[0xFF05] = 0x00;
 	memory[0xFF06] = 0x00;
 	memory[0xFF07] = 0xF8;
-	memory[0xFF0F] = 0xE0;		//BGB value
+	memory[0xFF0F] = 0xE1;		
 	memory[0xFF10] = 0x80;
 	memory[0xFF11] = 0xBF;
 	memory[0xFF12] = 0xF3;
@@ -357,8 +357,10 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			break;
 
 		case 0xFF41:		//STAT
-			value = ((value | 0x80) & 0xF8) | (memory[0xFF41] & 0x07);		//Keep upper bit set, and lower 3 bits are read only
-			write(0xFF41, value);
+			//value = ((value | 0x80) & 0xF8) | (memory[0xFF41] & 0x07);		//Keep upper bit set, and lower 3 bits are read only
+			value |= 0x80;
+			value &= 0xF8;
+			write(0xFF41, memory[0xFF41] | value);
 			break;
 
 		case 0xFF42:		//SCY
@@ -369,7 +371,7 @@ void MMU::writeIO(unsigned short registerValue, unsigned char value)
 			write(0xFF43, value);
 			break;
 
-		case 0xFF44:		//LY, writing to this register resets it to 0x00
+		case 0xFF44:		//LY, writes ignored
 			//write(0xFF44, 0x00);
 			//ppu.line = 0x00;
 			//write(0xFF44, value);
